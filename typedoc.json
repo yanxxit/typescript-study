@@ -1,0 +1,22 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "src/typedoc/doc.ts",
+    "src/interface/*.ts",
+  ],
+  "out": "docs",
+  "name": "My Project API",
+  "theme": "default",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "includeVersion": true,
+  "entryPointStrategy": "resolve",
+  "exclude": [
+    "node_modules/**",
+    "typings/**",
+    "src/basic/**",
+    "src/class/**",
+    "src/example/**",
+    "src/keywords/**"
+  ]
+}

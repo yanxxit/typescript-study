@@ -1,0 +1,33 @@
+// tsconfig.json
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "ts-node": {
+    "swc": true,
+    "swcOptions": {
+      "jsc": {
+        "target": "es2020",
+        "parser": {
+          "syntax": "typescript",
+          "decorators": true,       // 启用装饰器支持
+          "legacyDecorator": true  // 兼容旧版装饰器语法
+        },
+        "transform": {
+          "legacyDecorator": true,
+          "decoratorMetadata": true // 支持 Reflect.metadata
+        }
+      }
+    }
+  }
+}

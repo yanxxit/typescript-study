@@ -1,0 +1,1 @@
+# [function](https://typescript.bootcss.com/functions.html)

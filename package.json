@@ -1,0 +1,31 @@
+{
+  "name": "typescript-study",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node-dev --respawn --transpile-only src/demo/base.ts",
+    "exec": "ts-node-dev --transpile-only src/demo/base.ts",
+    "doc": "typedoc",
+    "doc:file": "typedoc src/typedoc/doc.ts",
+    "exec1": "ts-node-dev --transpile-only src/example/readline.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.20.0",
+  "devDependencies": {
+    "@swc/cli": "^0.7.9",
+    "@swc/core": "^1.15.3",
+    "@swc/helpers": "^0.5.17",
+    "@types/node": "^24.10.1",
+    "regenerator-runtime": "^0.14.1",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typedoc": "^0.28.15",
+    "typedoc-plugin-markdown": "^4.9.0"
+  },
+  "dependencies": {
+    "typescript": "^5.9.3"
+  }
+}
