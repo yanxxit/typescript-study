@@ -6,6 +6,8 @@
   "scripts": {
     "start": "ts-node-dev --respawn --transpile-only src/demo/base.ts",
     "exec": "ts-node-dev --transpile-only src/demo/base.ts",
+    "dev": "bun run src/demo/base.ts",
+    "build": "tsc src/demo/base.ts",
     "doc": "typedoc",
     "doc:file": "typedoc src/typedoc/doc.ts",
     "exec1": "ts-node-dev --transpile-only src/example/readline.ts"
@@ -26,6 +28,7 @@
     "typedoc-plugin-markdown": "^4.9.0"
   },
   "dependencies": {
+    "dayjs": "^1.11.19",
     "typescript": "^5.9.3"
   }
 }
