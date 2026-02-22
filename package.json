@@ -21,6 +21,7 @@
     "@swc/core": "^1.15.3",
     "@swc/helpers": "^0.5.17",
     "@types/node": "^24.10.1",
+    "reflect-metadata": "^0.2.2",
     "regenerator-runtime": "^0.14.1",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",

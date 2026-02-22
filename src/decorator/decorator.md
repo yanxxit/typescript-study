@@ -1,0 +1,1 @@
+# [decorator 装饰器](https://cloud.tencent.com/developer/article/2305532)
