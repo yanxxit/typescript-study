@@ -10,6 +10,7 @@
     "build": "tsc src/demo/base.ts",
     "doc": "typedoc",
     "doc:file": "typedoc src/typedoc/doc.ts",
+    "doc:calculator": "typedoc src/example/calculator.ts",
     "exec1": "ts-node-dev --transpile-only src/example/readline.ts"
   },
   "keywords": [],

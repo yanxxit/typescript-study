@@ -3,6 +3,7 @@
   "entryPoints": [
     "src/typedoc/doc.ts",
     "src/interface/*.ts",
+    "src/example/calculator.ts"
   ],
   "out": "docs",
   "name": "My Project API",
@@ -16,7 +17,6 @@
     "typings/**",
     "src/basic/**",
     "src/class/**",
-    "src/example/**",
     "src/keywords/**"
   ]
 }
