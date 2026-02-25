@@ -8,7 +8,7 @@
         "outDir": "./built",// 输出目录
         "allowJs": true,// 接受JavaScript做为输入
         "target": "es5",// 编译目标
-        "module": "commonjs",// 模块系统 commonjs 或者 
+        "module": "commonjs",// 模块系统 commonjs 或者 module
         "emitDecoratorMetadata": true,// Enables experimental support for emitting type metadata for decorators.
         "experimentalDecorators": true,// Enables experimental support for ES7 decorators.
     },

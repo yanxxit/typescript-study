@@ -11,16 +11,17 @@
     "doc": "typedoc",
     "doc:file": "typedoc src/typedoc/doc.ts",
     "doc:calculator": "typedoc src/example/calculator.ts",
-    "exec1": "ts-node-dev --transpile-only src/example/readline.ts"
+    "exec1": "ts-node-dev --transpile-only src/example/readline.ts",
+    "exec2": "ts-node-dev --transpile-only src/example/calculator.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.20.0",
   "devDependencies": {
-    "@swc/cli": "^0.7.9",
-    "@swc/core": "^1.15.3",
-    "@swc/helpers": "^0.5.17",
+    "@swc/cli": "^0.8.0",
+    "@swc/core": "^1.15.13",
+    "@swc/helpers": "^0.5.19",
     "@types/node": "^24.10.1",
     "reflect-metadata": "^0.2.2",
     "regenerator-runtime": "^0.14.1",

@@ -6,7 +6,7 @@
 
 ## 目录结构
 
-```
+```sh
 src/example/
 ├── calculator.ts  # 计算器实现
 └── calculator.md  # 计算器文档
@@ -28,6 +28,7 @@ npm run exec1
 
 # 或者直接运行
 npx ts-node-dev src/example/calculator.ts
+ts-node src/example/calculator.ts
 ```
 
 ## API 文档
