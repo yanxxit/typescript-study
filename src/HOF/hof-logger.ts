@@ -112,4 +112,4 @@ add(2, 3); // 同步日志
 minus2(5, 3); // 同步日志
 // fetchData('https://api-dev.tingo66.com/ping'); // 异步日志
 
-export { withLogging, logger };
+export { withLogging };
