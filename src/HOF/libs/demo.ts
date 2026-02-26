@@ -58,7 +58,7 @@ slowCompute(1000000);
 const apiSimulator = withTiming(
     () => {
         const start = performance.now();
-        while (performance.now() - start < 100) {} // 模拟 100ms 延迟
+        while (performance.now() - start < 100) { } // 模拟 100ms 延迟
         return 'done';
     },
     { warnThreshold: 50, errorThreshold: 200 }
@@ -125,9 +125,6 @@ const flakyFn = withRetry(
     { maxRetries: 3, delay: 100, backoff: 1 }
 );
 
-console.log('>>> 测试：自动重试');
-flakyFn().then(result => console.log(`最终结果：${result}`));
-
 // 重试结果（不抛错）
 let alwaysFailCount = 0;
 const failFn = withRetryResult(
@@ -173,7 +170,7 @@ const enhancedFn1 = withLogging(
         withTiming((n: number) => {
             if (n < 0) throw new Error('负数错误');
             return n * 2;
-        }, { logDuration: true }),
+        }),
         { ttl: 5000 }
     )
 );

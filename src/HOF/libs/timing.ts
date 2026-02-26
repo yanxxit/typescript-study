@@ -1,7 +1,7 @@
 // timing.ts - 执行时间统计高阶函数
 
 import type { AnyFunction, ExecutionResult, Logger, TimingOptions } from './types.ts';
-import { defaultLogger } from './logging.ts';
+import { defaultLogger } from './logging';
 
 /**
  * 时间单位转换

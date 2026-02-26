@@ -44,7 +44,7 @@ export type {
     LoggingOptions,
     Logger,
     TimingOptions
-} from './types.ts';
+} from './types';
 
 // ==================== 日志功能 ====================
 export {
@@ -53,7 +53,7 @@ export {
     withErrorLogging,
     createDefaultLogger,
     defaultLogger
-} from './logging.ts';
+} from './logging';
 
 // ==================== 计时功能 ====================
 export {
@@ -63,7 +63,7 @@ export {
     getProfileStats,
     resetProfileStats,
     type ProfileStats
-} from './timing.ts';
+} from './timing';
 
 // ==================== 缓存功能 ====================
 export {
@@ -74,7 +74,7 @@ export {
     resetCacheStats,
     type CacheStats,
     LRUCache
-} from './caching.ts';
+} from './caching';
 
 // ==================== 重试功能 ====================
 export {
@@ -87,7 +87,7 @@ export {
     type RetryStats,
     type RetryResult,
     type CancellableRetry
-} from './retry.ts';
+} from './retry';
 
 // ==================== 工具函数 ====================
 
@@ -147,17 +147,6 @@ export function compose(...fns: any[]): any {
  * )(fetch);
  * ```
  */
-export function pipe<A extends any[], B, C>(
-    fn1: (fn: (...args: A) => B) => (...args: A) => C,
-    fn2: (fn: (...args: A) => C) => (...args: A) => D
-): (fn: (...args: A) => B) => (...args: A) => D;
-
-export function pipe<A extends any[], B, C, D>(
-    fn1: (fn: (...args: A) => B) => (...args: A) => C,
-    fn2: (fn: (...args: A) => C) => (...args: A) => D,
-    fn3: (fn: (...args: A) => D) => (...args: A) => E
-): (fn: (...args: A) => B) => (...args: A) => E;
-
 export function pipe(...fns: any[]): any {
     if (fns.length === 0) return (arg: any) => arg;
     if (fns.length === 1) return fns[0];

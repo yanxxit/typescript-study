@@ -10,8 +10,12 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
-    }
+      "@/*": [
+        "src/*"
+      ]
+    },
+    "emitDecoratorMetadata": true, // Enables experimental support for emitting type metadata for decorators.
+    "experimentalDecorators": true, // Enables experimental support for ES7 decorators.
   },
   "ts-node": {
     "swc": true,
@@ -20,8 +24,8 @@
         "target": "es2020",
         "parser": {
           "syntax": "typescript",
-          "decorators": true,       // 启用装饰器支持
-          "legacyDecorator": true  // 兼容旧版装饰器语法
+          "decorators": true, // 启用装饰器支持
+          "legacyDecorator": true // 兼容旧版装饰器语法
         },
         "transform": {
           "legacyDecorator": true,

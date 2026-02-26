@@ -14,7 +14,7 @@ interface CacheEntry<T> {
 /**
  * LRU 缓存实现
  */
-class LRUCache<T> {
+export class LRUCache<T> {
     private cache = new Map<string, CacheEntry<T>>();
     private maxSize: number;
 
@@ -124,14 +124,14 @@ export function withCache<T extends AnyFunction>(fn: T, options?: CacheOptions):
         if (cached) {
             // 检查 TTL
             if (ttl > 0) {
-                const age = Date.now() - cached.timestamp;
+                const age = Date.now() - (cached as CacheEntry<ReturnType<T>>).timestamp;
                 if (age > ttl) {
                     cache.delete(key);
                 } else {
-                    return cached.value;
+                    return (cached as CacheEntry<ReturnType<T>>).value;
                 }
             } else {
-                return cached.value;
+                return (cached as CacheEntry<ReturnType<T>>).value;
             }
         }
 
@@ -139,12 +139,12 @@ export function withCache<T extends AnyFunction>(fn: T, options?: CacheOptions):
         const result = fn.apply(this, args);
 
         if (!(result instanceof Promise)) {
-            cache.set(key, { value: result, timestamp: Date.now() });
+            cache.set(key, { value: result, timestamp: Date.now() } as any);
         } else {
             // 异步函数：等待结果后缓存
             return (result as Promise<ReturnType<T>>)
                 .then(res => {
-                    cache.set(key, { value: res, timestamp: Date.now() });
+                    cache.set(key, { value: res, timestamp: Date.now() } as any);
                     return res;
                 })
                 .catch(err => {
@@ -220,19 +220,19 @@ export function withCacheStats<T extends AnyFunction>(fn: T, options?: CacheOpti
         const cached = cache.get(key);
         if (cached) {
             if (ttl > 0) {
-                const age = Date.now() - cached.timestamp;
+                const age = Date.now() - (cached as CacheEntry<ReturnType<T>>).timestamp;
                 if (age > ttl) {
                     cache.delete(key);
                     stats.misses++;
                 } else {
                     stats.hits++;
                     stats.hitRate = stats.hits / (stats.hits + stats.misses);
-                    return cached.value;
+                    return (cached as CacheEntry<ReturnType<T>>).value;
                 }
             } else {
                 stats.hits++;
                 stats.hitRate = stats.hits / (stats.hits + stats.misses);
-                return cached.value;
+                return (cached as CacheEntry<ReturnType<T>>).value;
             }
         }
 
@@ -242,11 +242,11 @@ export function withCacheStats<T extends AnyFunction>(fn: T, options?: CacheOpti
         const result = fn.apply(this, args);
 
         if (!(result instanceof Promise)) {
-            cache.set(key, { value: result, timestamp: Date.now() });
+            cache.set(key, { value: result, timestamp: Date.now() } as any);
         } else {
             return (result as Promise<ReturnType<T>>)
                 .then(res => {
-                    cache.set(key, { value: res, timestamp: Date.now() });
+                    cache.set(key, { value: res, timestamp: Date.now() } as any);
                     return res;
                 })
                 .catch(err => {
