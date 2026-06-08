@@ -23,3 +23,4 @@ c.reset();
 c.interval = 5.0;
 
 console.log("接口也可以实现调用签名 = ", c);
+export {};

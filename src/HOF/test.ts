@@ -10,4 +10,5 @@ const Decorators = {
     retry: withRetry1,
 };
 
-const api = Decorators.log(Decorators.retry(fetchData));
+const api = Decorators.log(Decorators.retry(() => {}));
+export {};

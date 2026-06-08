@@ -10,3 +10,4 @@ interface Point3d extends Point {
 let point3d: Point3d = { x: 1, y: 2, z: 3 };
 
 console.log(point3d);
+export {};

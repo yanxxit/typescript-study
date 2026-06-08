@@ -22,3 +22,4 @@ employee.fullName = "Bob Smith";
 if (employee.fullName) {
   alert(employee.fullName);
 }
+export {};

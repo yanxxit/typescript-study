@@ -22,3 +22,4 @@ console.log("greeter = ", greeter.greeting)
 
 
 Greeter.sayHello();
+export {};

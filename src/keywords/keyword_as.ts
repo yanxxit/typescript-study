@@ -139,3 +139,4 @@ function createSquare(config: SquareConfig) {
 
 
 // ts-node keyword_as.ts
+export {};

@@ -34,6 +34,8 @@
  * @packageDocumentation
  */
 
+import type { AnyFunction } from './types';
+
 // ==================== 类型导出 ====================
 export type {
     AnyFunction,

@@ -131,3 +131,4 @@ let q: YX;
 
 
 // ts-node keyword_discriminant.ts
+export {};

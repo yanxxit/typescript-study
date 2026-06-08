@@ -41,3 +41,5 @@ type StrPromiseRes = PromiseResType<StrPromise> // str
 type PersonPromise = ReturnType<typeof personPromise> // Promise<Person>
 // 反解
 type PersonPromiseRes = PromiseResType<PersonPromise> // Person
+
+export {};
