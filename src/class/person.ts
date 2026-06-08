@@ -18,5 +18,6 @@ class Employee extends Person {
 }
 
 let howard = new Employee("Howard", "Sales");
-let john = new Person("John"); // 错误: 'Person' 的构造函数是被保护的.
+// @ts-expect-error 错误: 'Person' 的构造函数是被保护的.
+let john = new Person("John");
 export {};

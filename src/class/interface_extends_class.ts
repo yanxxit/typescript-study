@@ -1,6 +1,6 @@
 class Point {
-  x: number;
-  y: number;
+  x!: number;
+  y!: number;
 }
 
 interface Point3d extends Point {

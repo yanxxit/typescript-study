@@ -31,7 +31,9 @@
     "typedoc-plugin-markdown": "^4.9.0"
   },
   "dependencies": {
+    "@types/express": "^5.0.6",
     "dayjs": "^1.11.19",
+    "express": "^5.2.1",
     "typescript": "^5.9.3",
     "winston": "^3.19.0"
   }
