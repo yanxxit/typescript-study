@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeScript 内置工具类型完全指南</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #3178c6;
+      --primary-light: #519aba;
+      --primary-dark: #235a97;
+      --accent: #f7df1e;
+      --accent-warm: #ff6b6b;
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-code: #1c2128;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --success: #3fb950;
+      --error: #f85149;
+      --warning: #d29922;
+      --gradient-1: linear-gradient(135deg, #3178c6, #519aba);
+      --gradient-2: linear-gradient(135deg, #f7df1e, #ff6b6b);
+      --gradient-3: linear-gradient(135deg, #3fb950, #519aba);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 20%, rgba(49, 120, 198, 0.15), transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(247, 223, 30, 0.1), transparent 50%),
+                  var(--bg);
+      padding: 2rem;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(49, 120, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(247, 223, 30, 0.2) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      background: rgba(49, 120, 198, 0.2);
+      border: 1px solid var(--primary);
+      border-radius: 50px;
+      font-size: 0.9rem;
+      color: var(--primary-light);
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s ease 0.1s both;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 3rem;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 800;
+      background: var(--gradient-2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Navigation */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 1.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-inner::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-link {
+      white-space: nowrap;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(49, 120, 198, 0.2);
+      color: var(--primary-light);
+    }
+
+    /* Main Content */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    /* Section Styles */
+    .section {
+      margin-bottom: 6rem;
+      animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .section-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+
+    .section-icon.objects { background: var(--gradient-1); }
+    .section-icon.unions { background: var(--gradient-2); }
+    .section-icon.functions { background: linear-gradient(135deg, #a855f7, #ec4899); }
+    .section-icon.strings { background: var(--gradient-3); }
+    .section-icon.other { background: linear-gradient(135deg, #f97316, #ef4444); }
+
+    .section-title {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    /* Type Card */
+    .type-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .type-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--gradient-1);
+      border-radius: 4px 0 0 4px;
+    }
+
+    .type-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(49, 120, 198, 0.2);
+    }
+
+    .type-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .type-name {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary-light);
+    }
+
+    .type-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-essential {
+      background: rgba(63, 185, 80, 0.2);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+
+    .badge-common {
+      background: rgba(49, 120, 198, 0.2);
+      color: var(--primary-light);
+      border: 1px solid var(--primary);
+    }
+
+    .badge-advanced {
+      background: rgba(210, 153, 34, 0.2);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+    }
+
+    .type-translation {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .type-description {
+      margin-bottom: 1.5rem;
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    /* Code Blocks */
+    .code-wrapper {
+      position: relative;
+      margin: 1.5rem 0;
+    }
+
+    .code-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 0.4rem 1rem;
+      background: var(--primary);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 0 0 8px 0;
+      z-index: 1;
+    }
+
+    .code-label.output {
+      background: var(--success);
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      padding-top: 2.5rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    .inline-code {
+      background: rgba(49, 120, 198, 0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--primary-light);
+    }
+
+    /* Syntax Highlighting */
+    .keyword { color: #ff7b72; }
+    .type { color: #79c0ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .function { color: #d2a8ff; }
+    .property { color: #e6edf3; }
+    .operator { color: #ff7b72; }
+
+    /* Mermaid Container */
+    .mermaid-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 2rem 0;
+      text-align: center;
+    }
+
+    .mermaid-container h4 {
+      margin-bottom: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Visual Diagram */
+    .visual-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      padding: 2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+
+    .diagram-box {
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+      min-width: 150px;
+    }
+
+    .diagram-box.input {
+      background: rgba(49, 120, 198, 0.2);
+      border: 2px solid var(--primary);
+    }
+
+    .diagram-box.output {
+      background: rgba(63, 185, 80, 0.2);
+      border: 2px solid var(--success);
+    }
+
+    .diagram-arrow {
+      font-size: 2rem;
+      color: var(--text-muted);
+    }
+
+    .diagram-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .diagram-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+    }
+
+    /* Comparison Table */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .comparison-table th {
+      background: var(--primary-dark);
+      padding: 1rem 1.5rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .comparison-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .comparison-table tr:hover td {
+      background: rgba(49, 120, 198, 0.1);
+    }
+
+    /* Principle Box */
+    .principle-box {
+      background: linear-gradient(135deg, rgba(49, 120, 198, 0.1), rgba(81, 154, 186, 0.1));
+      border: 1px solid var(--primary);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .principle-box h4 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--primary-light);
+      margin-bottom: 1rem;
+    }
+
+    /* Tip Box */
+    .tip-box {
+      background: rgba(63, 185, 80, 0.1);
+      border: 1px solid var(--success);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .tip-box h4 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--success);
+      margin-bottom: 1rem;
+    }
+
+    /* Warning Box */
+    .warning-box {
+      background: rgba(210, 153, 34, 0.1);
+      border: 1px solid var(--warning);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .warning-box h4 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--warning);
+      margin-bottom: 1rem;
+    }
+
+    /* SVG Illustrations */
+    .svg-container {
+      display: flex;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+
+    /* Quick Reference Grid */
+    .quick-ref-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .quick-ref-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .quick-ref-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .quick-ref-card .type-name {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .quick-ref-card .type-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .quick-ref-card .type-example {
+      margin-top: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--primary-light);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 4rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .footer a {
+      color: var(--primary-light);
+      text-decoration: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2rem;
+      }
+
+      .hero-stats {
+        gap: 2rem;
+      }
+
+      .stat-number {
+        font-size: 2rem;
+      }
+
+      .section-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .visual-diagram {
+        flex-direction: column;
+      }
+
+      .diagram-arrow {
+        transform: rotate(90deg);
+      }
+    }
+
+    /* Scroll Animation */
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">TypeScript 5.x 内置工具类型</span>
+      <h1>TypeScript 内置工具类型完全指南</h1>
+      <p>无需安装依赖，全局可用。掌握这些工具类型，让你的 TypeScript 代码更安全、更优雅。</p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">20+</div>
+          <div class="stat-label">工具类型</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">5</div>
+          <div class="stat-label">核心类别</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">0</div>
+          <div class="stat-label">外部依赖</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#objects" class="nav-link">对象操作</a>
+      <a href="#unions" class="nav-link">联合类型操作</a>
+      <a href="#functions" class="nav-link">函数操作</a>
+      <a href="#strings" class="nav-link">字符串操作</a>
+      <a href="#other" class="nav-link">其他实用类型</a>
+      <a href="#quickref" class="nav-link">速查表</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container">
+
+    <!-- Section 1: Object Operations -->
+    <section id="objects" class="section">
+      <div class="section-header">
+        <div class="section-icon objects">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">对象操作</h2>
+          <p class="section-subtitle">转换和操作对象类型的工具集合</p>
+        </div>
+      </div>
+
+      <!-- Partial -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Partial&lt;Type&gt;</span>
+          <span class="type-badge badge-essential">核心</span>
+          <span class="type-translation">部分类型 - 将所有属性变为可选</span>
+        </div>
+        <div class="type-description">
+          <p>将类型 <code class="inline-code">T</code> 的所有属性变为可选。这在更新操作中特别有用——你只需要传递要修改的字段。</p>
+        </div>
+
+        <!-- Visual Diagram -->
+        <div class="visual-diagram">
+          <div class="diagram-box input">
+            <div class="diagram-label">原始类型</div>
+            <div class="diagram-value">
+              {<br>
+              &nbsp;&nbsp;title: string<br>
+              &nbsp;&nbsp;desc: string<br>
+              &nbsp;&nbsp;done: boolean<br>
+              }
+            </div>
+          </div>
+          <div class="diagram-arrow">→ Partial →</div>
+          <div class="diagram-box output">
+            <div class="diagram-label">结果类型</div>
+            <div class="diagram-value">
+              {<br>
+              &nbsp;&nbsp;title?: string<br>
+              &nbsp;&nbsp;desc?: string<br>
+              &nbsp;&nbsp;done?: boolean<br>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">interface</span> <span class="type">Todo</span> {
+  <span class="property">title</span>: <span class="type">string</span>
+  <span class="property">description</span>: <span class="type">string</span>
+  <span class="property">completed</span>: <span class="type">boolean</span>
+}
+
+<span class="comment">// 更新时只需传部分字段</span>
+<span class="keyword">function</span> <span class="function">updateTodo</span>(
+  <span class="property">todo</span>: <span class="type">Todo</span>,
+  <span class="property">fields</span>: <span class="type">Partial</span>&lt;<span class="type">Todo</span>&gt;
+): <span class="type">Todo</span> {
+  <span class="keyword">return</span> { ...todo, ...fields }
+}
+
+<span class="keyword">const</span> todo: <span class="type">Todo</span> = {
+  <span class="property">title</span>: <span class="string">'学习 TypeScript'</span>,
+  <span class="property">description</span>: <span class="string">'掌握工具类型'</span>,
+  <span class="property">completed</span>: <span class="keyword">false</span>
+}
+
+<span class="comment">// 只更新 completed，其他字段保持不变</span>
+<span class="function">updateTodo</span>(todo, { <span class="property">completed</span>: <span class="keyword">true</span> })</code></pre>
+        </div>
+
+        <div class="principle-box">
+          <h4>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+            实现原理
+          </h4>
+          <p><code class="inline-code">Partial&lt;T&gt;</code> 通过映射类型实现，遍历 <code class="inline-code">T</code> 的所有键，添加 <code class="inline-code">?</code> 修饰符：</p>
+          <pre style="margin-top: 1rem;"><code><span class="keyword">type</span> <span class="type">Partial</span>&lt;<span class="type">T</span>&gt; = { [<span class="type">P</span> <span class="keyword">in</span> <span class="keyword">keyof</span> <span class="type">T</span>]?: <span class="type">T</span>[<span class="type">P</span>] }</code></pre>
+        </div>
+
+        <div class="tip-box">
+          <h4>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/>
+            </svg>
+            实际应用场景
+          </h4>
+          <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+            <li>REST API 的 PATCH 请求体</li>
+            <li>React 组件的 Props 更新</li>
+            <li>表单的可选字段验证</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Required -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Required&lt;Type&gt;</span>
+          <span class="type-badge badge-essential">核心</span>
+          <span class="type-translation">必选类型 - 将所有属性变为必选</span>
+        </div>
+        <div class="type-description">
+          <p><code class="inline-code">Partial</code> 的反操作。将类型 <code class="inline-code">T</code> 的所有属性变为必选，确保对象包含所有必需字段。</p>
+        </div>
+
+        <div class="visual-diagram">
+          <div class="diagram-box input">
+            <div class="diagram-label">原始类型</div>
+            <div class="diagram-value">
+              {<br>
+              &nbsp;&nbsp;a?: number<br>
+              &nbsp;&nbsp;b?: string<br>
+              }
+            </div>
+          </div>
+          <div class="diagram-arrow">→ Required →</div>
+          <div class="diagram-box output">
+            <div class="diagram-label">结果类型</div>
+            <div class="diagram-value">
+              {<br>
+              &nbsp;&nbsp;a: number<br>
+              &nbsp;&nbsp;b: string<br>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">interface</span> <span class="type">Props</span> {
+  <span class="property">a</span>?: <span class="type">number</span>
+  <span class="property">b</span>?: <span class="type">string</span>
+}
+
+<span class="comment">// ✅ 正确：a 和 b 都是可选的</span>
+<span class="keyword">const</span> obj: <span class="type">Props</span> = { <span class="property">a</span>: <span class="number">5</span> }
+
+<span class="comment">// ❌ 错误：缺少必选属性 'b'</span>
+<span class="keyword">const</span> obj2: <span class="type">Required</span>&lt;<span class="type">Props</span>&gt; = { <span class="property">a</span>: <span class="number">5</span> }
+<span class="comment">// 正确写法：{ a: 5, b: 'hello' }</span></code></pre>
+        </div>
+      </div>
+
+      <!-- Readonly -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Readonly&lt;Type&gt;</span>
+          <span class="type-badge badge-essential">核心</span>
+          <span class="type-translation">只读类型 - 将所有属性变为只读</span>
+        </div>
+        <div class="type-description">
+          <p>将类型 <code class="inline-code">T</code> 的所有属性变为 <code class="inline-code">readonly</code>，防止意外修改。常与 <code class="inline-code">Object.freeze()</code> 配合使用。</p>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">interface</span> <span class="type">Config</span> {
+  <span class="property">host</span>: <span class="type">string</span>
+  <span class="property">port</span>: <span class="type">number</span>
+}
+
+<span class="keyword">const</span> config: <span class="type">Readonly</span>&lt;<span class="type">Config</span>&gt; = {
+  <span class="property">host</span>: <span class="string">'localhost'</span>,
+  <span class="property">port</span>: <span class="number">3000</span>
+}
+
+config.host = <span class="string">'example.com'</span>  <span class="comment">// ❌ 不能赋值给只读属性</span>
+
+<span class="comment">// 配合 Object.freeze 使用</span>
+<span class="keyword">function</span> <span class="function">freeze</span>&lt;<span class="type">T</span>&gt;(<span class="property">obj</span>: <span class="type">T</span>): <span class="type">Readonly</span>&lt;<span class="type">T</span>&gt; {
+  <span class="keyword">return</span> Object.<span class="function">freeze</span>(obj)
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Record -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Record&lt;Keys, Type&gt;</span>
+          <span class="type-badge badge-essential">核心</span>
+          <span class="type-translation">记录类型 - 构造键值映射</span>
+        </div>
+        <div class="type-description">
+          <p>构造一个对象类型，其属性键为 <code class="inline-code">Keys</code>，属性值类型为 <code class="inline-code">Type</code>。非常适合创建枚举映射或字典类型。</p>
+        </div>
+
+        <div class="mermaid-container">
+          <h4>Record 类型转换流程</h4>
+          <pre class="mermaid">
+flowchart LR
+    A["联合类型<br/>'a' | 'b' | 'c'"] --> B[Record]
+    C["值类型<br/>number"] --> B
+    B --> D["{<br/>a: number<br/>b: number<br/>c: number<br/>}"]
+          </pre>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="comment">// 定义猫的名字和信息</span>
+<span class="keyword">type</span> <span class="type">CatName</span> = <span class="string">'miffy'</span> | <span class="string">'boris'</span> | <span class="string">'mordred'</span>
+
+<span class="keyword">interface</span> <span class="type">CatInfo</span> {
+  <span class="property">age</span>: <span class="type">number</span>
+  <span class="property">breed</span>: <span class="type">string</span>
+}
+
+<span class="comment">// 使用 Record 创建猫的映射</span>
+<span class="keyword">const</span> cats: <span class="type">Record</span>&lt;<span class="type">CatName</span>, <span class="type">CatInfo</span>&gt; = {
+  <span class="property">miffy</span>: { <span class="property">age</span>: <span class="number">10</span>, <span class="property">breed</span>: <span class="string">'Persian'</span> },
+  <span class="property">boris</span>: { <span class="property">age</span>: <span class="number">5</span>, <span class="property">breed</span>: <span class="string">'Maine Coon'</span> },
+  <span class="property">mordred</span>: { <span class="property">age</span>: <span class="number">16</span>, <span class="property">breed</span>: <span class="string">'British Shorthair'</span> }
+}
+
+<span class="comment">// 等价于手动定义：</span>
+<span class="keyword">interface</span> <span class="type">CatMap</span> {
+  <span class="property">miffy</span>: <span class="type">CatInfo</span>
+  <span class="property">boris</span>: <span class="type">CatInfo</span>
+  <span class="property">mordred</span>: <span class="type">CatInfo</span>
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Pick -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Pick&lt;Type, Keys&gt;</span>
+          <span class="type-badge badge-essential">核心</span>
+          <span class="type-translation">选取类型 - 从类型中选取指定的键</span>
+        </div>
+        <div class="type-description">
+          <p>从类型 <code class="inline-code">T</code> 中选取一组属性键 <code class="inline-code">K</code> 构造新类型。当你只需要对象的部分字段时使用。</p>
+        </div>
+
+        <div class="visual-diagram">
+          <div class="diagram-box input" style="background: rgba(168, 85, 247, 0.2); border-color: #a855f7;">
+            <div class="diagram-label">原始类型 Todo</div>
+            <div class="diagram-value">
+              title: string<br>
+              description: string<br>
+              completed: boolean
+            </div>
+          </div>
+          <div class="diagram-arrow">→ Pick ['title','completed'] →</div>
+          <div class="diagram-box output">
+            <div class="diagram-label">TodoPreview</div>
+            <div class="diagram-value">
+              title: string<br>
+              completed: boolean
+            </div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">interface</span> <span class="type">Todo</span> {
+  <span class="property">title</span>: <span class="type">string</span>
+  <span class="property">description</span>: <span class="type">string</span>
+  <span class="property">completed</span>: <span class="type">boolean</span>
+}
+
+<span class="comment">// 只取 title 和 completed</span>
+<span class="keyword">type</span> <span class="type">TodoPreview</span> = <span class="type">Pick</span>&lt;<span class="type">Todo</span>, <span class="string">'title'</span> | <span class="string">'completed'</span>&gt;
+
+<span class="keyword">const</span> todo: <span class="type">TodoPreview</span> = {
+  <span class="property">title</span>: <span class="string">'清洁房间'</span>,
+  <span class="property">completed</span>: <span class="keyword">false</span>
+}
+<span class="comment">// ✅ 不需要 description</span></code></pre>
+        </div>
+      </div>
+
+      <!-- Omit -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Omit&lt;Type, Keys&gt;</span>
+          <span class="type-badge badge-essential">核心</span>
+          <span class="type-translation">排除类型 - 从类型中排除指定的键</span>
+        </div>
+        <div class="type-description">
+          <p><code class="inline-code">Pick</code> 的反操作。从类型 <code class="inline-code">T</code> 中排除一组属性键 <code class="inline-code">K</code>，保留其余属性。</p>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">interface</span> <span class="type">User</span> {
+  <span class="property">id</span>: <span class="type">number</span>
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">email</span>: <span class="type">string</span>
+  <span class="property">password</span>: <span class="type">string</span>
+}
+
+<span class="comment">// 排除敏感字段，创建安全的响应类型</span>
+<span class="keyword">type</span> <span class="type">SafeUser</span> = <span class="type">Omit</span>&lt;<span class="type">User</span>, <span class="string">'password'</span>&gt;
+<span class="comment">// { id: number; name: string; email: string }</span>
+
+<span class="comment">// 原理：Omit = Pick + Exclude</span>
+<span class="keyword">type</span> <span class="type">Omit</span>&lt;<span class="type">T</span>, <span class="type">K</span> <span class="keyword">extends</span> <span class="keyword">keyof</span> <span class="type">any</span>&gt; = <span class="type">Pick</span>&lt;<span class="type">T</span>, <span class="type">Exclude</span>&lt;<span class="keyword">keyof</span> <span class="type">T</span>, <span class="type">K</span>&gt;&gt;</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Union Operations -->
+    <section id="unions" class="section">
+      <div class="section-header">
+        <div class="section-icon unions">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <circle cx="9" cy="12" r="6"/>
+            <circle cx="15" cy="12" r="6"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">联合类型操作</h2>
+          <p class="section-subtitle">过滤和提取联合类型的工具集合</p>
+        </div>
+      </div>
+
+      <!-- Exclude -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Exclude&lt;Union, Excluded&gt;</span>
+          <span class="type-badge badge-essential">核心</span>
+          <span class="type-translation">排除类型 - 从联合类型中排除指定成员</span>
+        </div>
+        <div class="type-description">
+          <p>从联合类型 <code class="inline-code">U</code> 中排除可赋值给 <code class="inline-code">E</code> 的类型成员。</p>
+        </div>
+
+        <div class="svg-container">
+          <svg width="500" height="200" viewBox="0 0 500 200">
+            <!-- Background -->
+            <rect x="0" y="0" width="500" height="200" fill="transparent"/>
+            
+            <!-- Union Circle -->
+            <circle cx="120" cy="100" r="80" fill="rgba(49, 120, 198, 0.3)" stroke="#3178c6" stroke-width="2"/>
+            <text x="120" y="80" text-anchor="middle" fill="#519aba" font-size="14">Exclude</text>
+            <text x="120" y="100" text-anchor="middle" fill="#e6edf3" font-size="12">'a' | 'b' | 'c'</text>
+            
+            <!-- Arrow -->
+            <line x1="220" y1="100" x2="280" y2="100" stroke="#8b949e" stroke-width="2" marker-end="url(#arrowhead)"/>
+            <defs>
+              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#8b949e"/>
+              </marker>
+            </defs>
+            
+            <!-- Remove 'a' -->
+            <circle cx="350" cy="100" r="80" fill="rgba(63, 185, 80, 0.3)" stroke="#3fb950" stroke-width="2"/>
+            <text x="350" y="80" text-anchor="middle" fill="#3fb950" font-size="14">结果</text>
+            <text x="350" y="100" text-anchor="middle" fill="#e6edf3" font-size="12">'b' | 'c'</text>
+            
+            <!-- Removed part -->
+            <text x="350" y="150" text-anchor="middle" fill="#f85149" font-size="11">排除: 'a'</text>
+          </svg>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="comment">// 基本用法</span>
+<span class="keyword">type</span> <span class="type">T0</span> = <span class="type">Exclude</span>&lt;<span class="string">'a'</span> | <span class="string">'b'</span> | <span class="string">'c'</span>, <span class="string">'a'</span>&gt;
+<span class="comment">// 结果: 'b' | 'c'</span>
+
+<span class="comment">// 排除函数类型</span>
+<span class="keyword">type</span> <span class="type">T1</span> = <span class="type">Exclude</span>&lt;<span class="type">string</span> | <span class="type">number</span> | (() =&gt; <span class="type">void</span>), <span class="type">Function</span>&gt;
+<span class="comment">// 结果: string | number</span>
+
+<span class="comment">// 实际应用：排除危险操作</span>
+<span class="keyword">type</span> <span class="type">Operations</span> = <span class="string">'getUser'</span> | <span class="string">'createUser'</span> | <span class="string">'deleteUser'</span>
+<span class="keyword">type</span> <span class="type">SafeOps</span> = <span class="type">Exclude</span>&lt;<span class="type">Operations</span>, <span class="string">'deleteUser'</span>&gt;
+<span class="comment">// 'getUser' | 'createUser'</span></code></pre>
+        </div>
+      </div>
+
+      <!-- Extract -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Extract&lt;Type, Union&gt;</span>
+          <span class="type-badge badge-essential">核心</span>
+          <span class="type-translation">提取类型 - 从类型中提取可赋值的成员</span>
+        </div>
+        <div class="type-description">
+          <p><code class="inline-code">Exclude</code> 的反操作。从类型 <code class="inline-code">T</code> 中提取可赋值给 <code class="inline-code">U</code> 的类型成员。</p>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="comment">// 基本用法</span>
+<span class="keyword">type</span> <span class="type">T0</span> = <span class="type">Extract</span>&lt;<span class="string">'a'</span> | <span class="string">'b'</span> | <span class="string">'c'</span>, <span class="string">'a'</span> | <span class="string">'f'</span>&gt;
+<span class="comment">// 结果: 'a'</span>
+
+<span class="comment">// 提取函数类型</span>
+<span class="keyword">type</span> <span class="type">T1</span> = <span class="type">Extract</span>&lt;<span class="type">string</span> | <span class="type">number</span> | (() =&gt; <span class="type">void</span>), <span class="type">Function</span>&gt;
+<span class="comment">// 结果: () => void</span>
+
+<span class="comment">// 实际应用：只保留读操作</span>
+<span class="keyword">type</span> <span class="type">AllOps</span> = <span class="string">'getUser'</span> | <span class="string">'createUser'</span> | <span class="string">'deleteUser'</span>
+<span class="keyword">type</span> <span class="type">ReadOps</span> = <span class="type">Extract</span>&lt;<span class="type">AllOps</span>, <span class="string">'getUser'</span>&gt;
+<span class="comment">// 'getUser'</span></code></pre>
+        </div>
+      </div>
+
+      <!-- NonNullable -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">NonNullable&lt;Type&gt;</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">非空类型 - 排除 null 和 undefined</span>
+        </div>
+        <div class="type-description">
+          <p>从类型 <code class="inline-code">T</code> 中排除 <code class="inline-code">null</code> 和 <code class="inline-code">undefined</code>。在处理可空值时非常有用。</p>
+        </div>
+
+        <div class="visual-diagram">
+          <div class="diagram-box input" style="background: rgba(210, 153, 34, 0.2); border-color: var(--warning);">
+            <div class="diagram-label">可空类型</div>
+            <div class="diagram-value">string | null | undefined</div>
+          </div>
+          <div class="diagram-arrow">→ NonNullable →</div>
+          <div class="diagram-box output">
+            <div class="diagram-label">非空类型</div>
+            <div class="diagram-value">string</div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="comment">// 基本用法</span>
+<span class="keyword">type</span> <span class="type">T0</span> = <span class="type">NonNullable</span>&lt;<span class="type">string</span> | <span class="type">number</span> | <span class="type">undefined</span>&gt;
+<span class="comment">// 结果: string | number</span>
+
+<span class="comment">// 实际应用：处理 API 响应</span>
+<span class="keyword">function</span> <span class="function">processResult</span>(
+  <span class="property">result</span>: <span class="type">string</span> | <span class="keyword">null</span> | <span class="type">undefined</span>
+): <span class="type">NonNullable</span>&lt;<span class="type">string</span> | <span class="keyword">null</span> | <span class="type">undefined</span>&gt; {
+  <span class="keyword">return</span> result ?? <span class="string">'default'</span>
+}
+
+<span class="comment">// 确保返回值永远不为空</span>
+<span class="keyword">const</span> value = <span class="function">processResult</span>(<span class="keyword">null</span>)  <span class="comment">// 'default'</span>
+<span class="keyword">const</span> value2 = <span class="function">processResult</span>(<span class="string">'hello'</span>)  <span class="comment">// 'hello'</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Function Operations -->
+    <section id="functions" class="section">
+      <div class="section-header">
+        <div class="section-icon functions">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M4 4h16v16H4z"/>
+            <path d="M8 12h8"/>
+            <path d="M12 8v8"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">函数操作</h2>
+          <p class="section-subtitle">提取和操作函数签名的工具集合</p>
+        </div>
+      </div>
+
+      <!-- Parameters -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Parameters&lt;Type&gt;</span>
+          <span class="type-badge badge-essential">核心</span>
+          <span class="type-translation">参数类型 - 提取函数参数类型的元组</span>
+        </div>
+        <div class="type-description">
+          <p>提取函数类型 <code class="inline-code">T</code> 的参数类型，返回一个元组类型。</p>
+        </div>
+
+        <div class="mermaid-container">
+          <h4>Parameters 类型提取</h4>
+          <pre class="mermaid">
+flowchart LR
+    A["函数签名<br/>function greet(<br/>name: string,<br/>age: number<br/>): void"] --> B["Parameters&lt;T&gt;"]
+            B --> C["元组类型<br/>[name: string,<br/>age: number]"]
+          </pre>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">declare function</span> <span class="function">greet</span>(<span class="property">name</span>: <span class="type">string</span>, <span class="property">age</span>: <span class="type">number</span>): <span class="type">void</span>
+
+<span class="comment">// 提取参数类型</span>
+<span class="keyword">type</span> <span class="type">Params</span> = <span class="type">Parameters</span>&lt;<span class="keyword">typeof</span> greet&gt;
+<span class="comment">// 结果: [name: string, age: number]</span>
+
+<span class="comment">// 实际应用：创建类型安全的包装函数</span>
+<span class="keyword">function</span> <span class="function">callWithDefaults</span>(
+  <span class="property">fn</span>: (...<span class="property">args</span>: <span class="type">Parameters</span>&lt;<span class="keyword">typeof</span> greet&gt;) =&gt; <span class="type">void</span>
+) {
+  <span class="function">fn</span>(<span class="string">'Alice'</span>, <span class="number">30</span>)  <span class="comment">// ✅ 类型安全</span>
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- ConstructorParameters -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">ConstructorParameters&lt;Type&gt;</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">构造函数参数类型 - 提取构造函数参数的元组</span>
+        </div>
+        <div class="type-description">
+          <p>提取构造函数类型 <code class="inline-code">T</code> 的参数类型，返回一个元组类型。</p>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">class</span> <span class="type">Article</span> {
+  <span class="function">constructor</span>(
+    <span class="keyword">public</span> <span class="property">title</span>: <span class="type">string</span>,
+    <span class="keyword">public</span> <span class="property">content</span>?: <span class="type">string</span>
+  ) {}
+}
+
+<span class="comment">// 提取构造函数参数</span>
+<span class="keyword">type</span> <span class="type">Params</span> = <span class="type">ConstructorParameters</span>&lt;<span class="keyword">typeof</span> <span class="type">Article</span>&gt;
+<span class="comment">// 结果: [title: string, content?: string]</span>
+
+<span class="comment">// 实际应用：实例缓存工厂</span>
+<span class="keyword">class</span> <span class="type">InstanceCache</span>&lt;<span class="type">T</span> <span class="keyword">extends</span> <span class="keyword">new</span> (...<span class="property">args</span>: <span class="type">any</span>[]) =&gt; <span class="type">any</span>&gt; {
+  <span class="keyword">private</span> <span class="property">cache</span> = <span class="keyword">new</span> <span class="type">Map</span>&lt;<span class="type">string</span>, <span class="type">InstanceType</span>&lt;<span class="type">T</span>&gt;&gt;()
+
+  <span class="function">getInstance</span>(
+    ...<span class="property">args</span>: <span class="type">ConstructorParameters</span>&lt;<span class="type">T</span>&gt;
+  ): <span class="type">InstanceType</span>&lt;<span class="type">T</span>&gt; {
+    <span class="keyword">const</span> key = <span class="type">JSON</span>.<span class="function">stringify</span>(args)
+    <span class="keyword">if</span> (!<span class="keyword">this</span>.cache.<span class="function">has</span>(key)) {
+      <span class="keyword">this</span>.cache.<span class="function">set</span>(key, <span class="keyword">new</span> (...args))
+    }
+    <span class="keyword">return</span> <span class="keyword">this</span>.cache.<span class="function">get</span>(key)!
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- ReturnType -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">ReturnType&lt;Type&gt;</span>
+          <span class="type-badge badge-essential">核心</span>
+          <span class="type-translation">返回类型 - 提取函数的返回类型</span>
+        </div>
+        <div class="type-description">
+          <p>提取函数类型 <code class="inline-code">T</code> 的返回类型。</p>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">function</span> <span class="function">getUser</span>() {
+  <span class="keyword">return</span> { <span class="property">id</span>: <span class="number">1</span>, <span class="property">name</span>: <span class="string">'Alice'</span>, <span class="property">age</span>: <span class="number">30</span> }
+}
+
+<span class="comment">// 提取返回类型</span>
+<span class="keyword">type</span> <span class="type">User</span> = <span class="type">ReturnType</span>&lt;<span class="keyword">typeof</span> getUser&gt;
+<span class="comment">// 结果: { id: number; name: string; age: number }</span>
+
+<span class="comment">// 确保变量类型与函数返回值一致</span>
+<span class="keyword">const</span> user: <span class="type">User</span> = <span class="function">getUser</span>()</code></pre>
+        </div>
+      </div>
+
+      <!-- InstanceType -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">InstanceType&lt;Type&gt;</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">实例类型 - 提取构造函数创建的实例类型</span>
+        </div>
+        <div class="type-description">
+          <p>提取构造函数类型 <code class="inline-code">T</code> 创建的实例类型。</p>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">class</span> <span class="type">Cat</span> {
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="function">constructor</span>(<span class="property">name</span>: <span class="type">string</span>) {
+    <span class="keyword">this</span>.name = name
+  }
+}
+
+<span class="comment">// 提取实例类型</span>
+<span class="keyword">type</span> <span class="type">CatInstance</span> = <span class="type">InstanceType</span>&lt;<span class="keyword">typeof</span> Cat&gt;
+<span class="comment">// 结果: Cat</span>
+
+<span class="comment">// 使用</span>
+<span class="keyword">function</span> <span class="function">createCat</span>(<span class="property">name</span>: <span class="type">string</span>): <span class="type">CatInstance</span> {
+  <span class="keyword">return</span> <span class="keyword">new</span> <span class="type">Cat</span>(name)
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- NoInfer -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">NoInfer&lt;Type&gt;</span>
+          <span class="type-badge badge-advanced">进阶</span>
+          <span class="type-translation">禁止推断类型 - 阻止类型推断向指定类型传播</span>
+        </div>
+        <div class="type-description">
+          <p>阻止 TypeScript 将某些参数推断到泛型参数中。确保默认值的类型必须来自其他参数。</p>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="comment">// 定义红绿灯类型</span>
+<span class="keyword">function</span> <span class="function">createStreetLight</span>&lt;<span class="type">C</span> <span class="keyword">extends</span> <span class="type">string</span>&gt;(
+  <span class="property">colors</span>: <span class="type">C</span>[],
+  <span class="property">defaultColor</span>?: <span class="type">NoInfer</span>&lt;<span class="type">C</span>&gt;  <span class="comment">// 禁止从这里推断 C</span>
+) {
+  <span class="comment">// ...</span>
+}
+
+<span class="comment">// ✅ 正确：'red' 在 colors 数组中</span>
+<span class="function">createStreetLight</span>([<span class="string">'red'</span>, <span class="string">'yellow'</span>, <span class="string">'green'</span>], <span class="string">'red'</span>)
+
+<span class="comment">// ❌ 错误：'blue' 不在 colors 数组中</span>
+<span class="function">createStreetLight</span>([<span class="string">'red'</span>, <span class="string">'yellow'</span>, <span class="string">'green'</span>], <span class="string">'blue'</span>)</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: String Operations -->
+    <section id="strings" class="section">
+      <div class="section-header">
+        <div class="section-icon strings">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M4 7V4h16v3"/>
+            <path d="M9 20h6"/>
+            <path d="M12 4v16"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">字符串操作</h2>
+          <p class="section-subtitle">编译时字符串转换工具</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Uppercase / Lowercase / Capitalize / Uncapitalize</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">字符串大小写转换</span>
+        </div>
+        <div class="type-description">
+          <p>四个内置的字符串操作类型，在模板字面量类型中非常强大。</p>
+        </div>
+
+        <div class="visual-diagram">
+          <div class="diagram-box input">
+            <div class="diagram-label">输入</div>
+            <div class="diagram-value">'hello'</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div class="diagram-arrow">→ Uppercase → 'HELLO'</div>
+            <div class="diagram-arrow">→ Capitalize → 'Hello'</div>
+            <div class="diagram-arrow">→ Uncapitalize → 'hello'</div>
+            <div class="diagram-arrow">→ Lowercase → 'hello'</div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="comment">// Uppercase: 字符串转大写</span>
+<span class="keyword">type</span> <span class="type">T1</span> = <span class="type">Uppercase</span>&lt;<span class="string">'hello'</span>&gt;      <span class="comment">// 'HELLO'</span>
+<span class="keyword">type</span> <span class="type">T2</span> = <span class="type">Uppercase</span>&lt;<span class="string">'foo'</span> | <span class="string">'bar'</span>&gt; <span class="comment">// 'FOO' | 'BAR'</span>
+
+<span class="comment">// Lowercase: 字符串转小写</span>
+<span class="keyword">type</span> <span class="type">T3</span> = <span class="type">Lowercase</span>&lt;<span class="string">'HELLO'</span>&gt;      <span class="comment">// 'hello'</span>
+
+<span class="comment">// Capitalize: 首字母大写</span>
+<span class="keyword">type</span> <span class="type">T4</span> = <span class="type">Capitalize</span>&lt;<span class="string">'hello'</span>&gt;     <span class="comment">// 'Hello'</span>
+
+<span class="comment">// Uncapitalize: 首字母小写</span>
+<span class="keyword">type</span> <span class="type">T5</span> = <span class="type">Uncapitalize</span>&lt;<span class="string">'Hello'</span>&gt;   <span class="comment">// 'hello'</span></code></pre>
+        </div>
+
+        <div class="principle-box">
+          <h4>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+            实际应用：事件系统命名
+          </h4>
+          <pre style="margin-top: 1rem;"><code><span class="comment">// 配合模板字面量类型自动生成事件名</span>
+<span class="keyword">type</span> <span class="type">EventName</span>&lt;<span class="type">T</span> <span class="keyword">extends</span> <span class="type">string</span>&gt; = <span class="string">`on${</span><span class="type">Capitalize</span>&lt;<span class="type">T</span>&gt;<span class="string">}`</span>
+
+<span class="keyword">type</span> <span class="type">ClickEvent</span> = <span class="type">EventName</span>&lt;<span class="string">'click'</span>&gt;     <span class="comment">// 'onClick'</span>
+<span class="keyword">type</span> <span class="type">FocusEvent</span> = <span class="type">EventName</span>&lt;<span class="string">'focus'</span>&gt;     <span class="comment">// 'onFocus'</span>
+<span class="keyword">type</span> <span class="type">BlurEvent</span> = <span class="type">EventName</span>&lt;<span class="string">'blur'</span>&gt;       <span class="comment">// 'onBlur'</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Other Utilities -->
+    <section id="other" class="section">
+      <div class="section-header">
+        <div class="section-icon other">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">其他实用类型</h2>
+          <p class="section-subtitle">异步处理和其他实用工具</p>
+        </div>
+      </div>
+
+      <!-- Awaited -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Awaited&lt;Type&gt;</span>
+          <span class="type-badge badge-essential">核心</span>
+          <span class="type-translation">解包类型 - 递归解包 Promise 类型</span>
+        </div>
+        <div class="type-description">
+          <p>递归解包 <code class="inline-code">Promise</code> 类型，模拟 <code class="inline-code">await</code> 的行为。处理多层 Promise 嵌套时非常有用。</p>
+        </div>
+
+        <div class="mermaid-container">
+          <h4>Awaited 解包流程</h4>
+          <pre class="mermaid">
+flowchart LR
+    A["Promise&lt;string&gt;"] --> B[Awaited]
+    B --> C["string"]
+    
+    D["Promise&lt;Promise&lt;number&gt;&gt;"] --> E[Awaited]
+    E --> F["number"]
+          </pre>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="comment">// 基本用法</span>
+<span class="keyword">type</span> <span class="type">A</span> = <span class="type">Awaited</span>&lt;<span class="type">Promise</span>&lt;<span class="type">string</span>&gt;&gt;
+<span class="comment">// 结果: string</span>
+
+<span class="comment">// 递归解包嵌套 Promise</span>
+<span class="keyword">type</span> <span class="type">B</span> = <span class="type">Awaited</span>&lt;<span class="type">Promise</span>&lt;<span class="type">Promise</span>&lt;<span class="type">number</span>&gt;&gt;&gt;
+<span class="comment">// 结果: number</span>
+
+<span class="comment">// 实际应用：提取异步函数的最终返回类型</span>
+<span class="keyword">async function</span> <span class="function">fetchUser</span>(<span class="property">id</span>: <span class="type">number</span>) {
+  <span class="keyword">const</span> res = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">`/api/users/</span>${id}<span class="string">`</span>)
+  <span class="keyword">return</span> res.<span class="function">json</span>()
+}
+
+<span class="comment">// 提取实际用户类型</span>
+<span class="keyword">type</span> <span class="type">ActualUser</span> = <span class="type">Awaited</span>&lt;<span class="type">ReturnType</span>&lt;<span class="keyword">typeof</span> fetchUser&gt;&gt;</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Reference -->
+    <section id="quickref" class="section">
+      <div class="section-header">
+        <div class="section-icon objects">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+            <rect x="9" y="3" width="6" height="4" rx="1"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">速查表</h2>
+          <p class="section-subtitle">所有内置工具类型一览</p>
+        </div>
+      </div>
+
+      <div class="quick-ref-grid">
+        <div class="quick-ref-card">
+          <div class="type-name">Partial&lt;T&gt;</div>
+          <div class="type-desc">部分类型</div>
+          <div class="type-example">所有属性可选</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">Required&lt;T&gt;</div>
+          <div class="type-desc">必选类型</div>
+          <div class="type-example">所有属性必选</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">Readonly&lt;T&gt;</div>
+          <div class="type-desc">只读类型</div>
+          <div class="type-example">所有属性只读</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">Record&lt;K,V&gt;</div>
+          <div class="type-desc">记录类型</div>
+          <div class="type-example">构造键值映射</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">Pick&lt;T,K&gt;</div>
+          <div class="type-desc">选取类型</div>
+          <div class="type-example">选取指定键</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">Omit&lt;T,K&gt;</div>
+          <div class="type-desc">排除类型</div>
+          <div class="type-example">排除指定键</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">Exclude&lt;T,U&gt;</div>
+          <div class="type-desc">排除联合成员</div>
+          <div class="type-example">过滤联合类型</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">Extract&lt;T,U&gt;</div>
+          <div class="type-desc">提取类型</div>
+          <div class="type-example">提取匹配成员</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">NonNullable&lt;T&gt;</div>
+          <div class="type-desc">非空类型</div>
+          <div class="type-example">排除 null/undefined</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">Parameters&lt;T&gt;</div>
+          <div class="type-desc">参数类型</div>
+          <div class="type-example">提取函数参数</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">ReturnType&lt;T&gt;</div>
+          <div class="type-desc">返回类型</div>
+          <div class="type-example">提取函数返回值</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">InstanceType&lt;T&gt;</div>
+          <div class="type-desc">实例类型</div>
+          <div class="type-example">提取类实例类型</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">Awaited&lt;T&gt;</div>
+          <div class="type-desc">解包类型</div>
+          <div class="type-example">解包 Promise</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">NoInfer&lt;T&gt;</div>
+          <div class="type-desc">禁止推断</div>
+          <div class="type-example">阻止类型推断传播</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">Uppercase&lt;S&gt;</div>
+          <div class="type-desc">大写转换</div>
+          <div class="type-example">字符串转大写</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">Lowercase&lt;S&gt;</div>
+          <div class="type-desc">小写转换</div>
+          <div class="type-example">字符串转小写</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">Capitalize&lt;S&gt;</div>
+          <div class="type-desc">首字母大写</div>
+          <div class="type-example">首字母转大写</div>
+        </div>
+        <div class="quick-ref-card">
+          <div class="type-name">Uncapitalize&lt;S&gt;</div>
+          <div class="type-desc">首字母小写</div>
+          <div class="type-example">首字母转小写</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comprehensive Example -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon unions">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">综合案例：API 类型系统</h2>
+          <p class="section-subtitle">组合使用多个工具类型构建完整的类型系统</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="code-wrapper">
+          <span class="code-label">完整示例</span>
+          <pre><code><span class="comment">// ============================================</span>
+<span class="comment">// 1. 定义基础类型</span>
+<span class="comment">// ============================================</span>
+<span class="keyword">interface</span> <span class="type">User</span> {
+  <span class="property">id</span>: <span class="type">number</span>
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">email</span>: <span class="type">string</span>
+  <span class="property">password</span>: <span class="type">string</span>
+  <span class="property">createdAt</span>: <span class="type">Date</span>
+}
+
+<span class="comment">// ============================================</span>
+<span class="comment">// 2. Record: 构造 API 端点映射</span>
+<span class="comment">// ============================================</span>
+<span class="keyword">type</span> <span class="type">ApiEndpoints</span> = <span class="type">Record</span>&lt;
+  <span class="string">'getUser'</span> | <span class="string">'updateUser'</span> | <span class="string">'deleteUser'</span>,
+  <span class="type">string</span>
+&gt;
+
+<span class="keyword">const</span> endpoints: <span class="type">ApiEndpoints</span> = {
+  <span class="property">getUser</span>: <span class="string">'/api/users/:id'</span>,
+  <span class="property">updateUser</span>: <span class="string">'/api/users/:id'</span>,
+  <span class="property">deleteUser</span>: <span class="string">'/api/users/:id'</span>
+}
+
+<span class="comment">// ============================================</span>
+<span class="comment">// 3. Pick + Omit: 创建安全的 DTO</span>
+<span class="comment">// ============================================</span>
+<span class="keyword">type</span> <span class="type">CreateUserDTO</span> = <span class="type">Omit</span>&lt;<span class="type">User</span>, <span class="string">'id'</span> | <span class="string">'createdAt'</span>&gt;
+<span class="keyword">type</span> <span class="type">UserResponse</span> = <span class="type">Omit</span>&lt;<span class="type">User</span>, <span class="string">'password'</span>&gt;
+
+<span class="comment">// ============================================</span>
+<span class="comment">// 4. Partial: 支持部分更新</span>
+<span class="comment">// ============================================</span>
+<span class="keyword">type</span> <span class="type">UpdateUserDTO</span> = <span class="type">Partial</span>&lt;<span class="type">Omit</span>&lt;<span class="type">User</span>, <span class="string">'id'</span> | <span class="string">'createdAt'</span>&gt;&gt;
+
+<span class="comment">// ============================================</span>
+<span class="comment">// 5. Parameters + ReturnType: 提取函数签名</span>
+<span class="comment">// ============================================</span>
+<span class="keyword">async function</span> <span class="function">fetchUser</span>(<span class="property">id</span>: <span class="type">number</span>): <span class="type">Promise</span>&lt;<span class="type">UserResponse</span>&gt; {
+  <span class="keyword">const</span> res = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">`/api/users/</span>${id}<span class="string">`</span>)
+  <span class="keyword">return</span> res.<span class="function">json</span>()
+}
+
+<span class="keyword">type</span> <span class="type">FetchUserParams</span> = <span class="type">Parameters</span>&lt;<span class="keyword">typeof</span> fetchUser&gt;  <span class="comment">// [id: number]</span>
+<span class="keyword">type</span> <span class="type">FetchUserReturn</span> = <span class="type">ReturnType</span>&lt;<span class="keyword">typeof</span> fetchUser&gt;  <span class="comment">// Promise&lt;UserResponse&gt;</span>
+
+<span class="comment">// ============================================</span>
+<span class="comment">// 6. Awaited: 解包 Promise 获取最终类型</span>
+<span class="comment">// ============================================</span>
+<span class="keyword">type</span> <span class="type">ActualUser</span> = <span class="type">Awaited</span>&lt;<span class="type">ReturnType</span>&lt;<span class="keyword">typeof</span> fetchUser&gt;&gt;
+
+<span class="comment">// ============================================</span>
+<span class="comment">// 7. Extract + Exclude: 过滤可选操作</span>
+<span class="comment">// ============================================</span>
+<span class="keyword">type</span> <span class="type">ReadOps</span> = <span class="string">'getUser'</span> | <span class="string">'listUsers'</span> | <span class="string">'searchUsers'</span>
+<span class="keyword">type</span> <span class="type">WriteOps</span> = <span class="string">'createUser'</span> | <span class="string">'updateUser'</span> | <span class="string">'deleteUser'</span>
+<span class="keyword">type</span> <span class="type">AllOps</span> = <span class="type">ReadOps</span> | <span class="type">WriteOps</span>
+
+<span class="keyword">type</span> <span class="type">SafeOps</span> = <span class="type">Exclude</span>&lt;<span class="type">AllOps</span>, <span class="string">'deleteUser'</span>&gt;
+<span class="keyword">type</span> <span class="type">ReadOnlyOps</span> = <span class="type">Extract</span>&lt;<span class="type">AllOps</span>, <span class="type">ReadOps</span>&gt;</code></pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>TypeScript 内置工具类型完全指南</p>
+    <p style="margin-top: 0.5rem;">掌握这些工具类型，让你的 TypeScript 代码更安全、更优雅</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    // Initialize Mermaid
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#3178c6',
+        primaryTextColor: '#e6edf3',
+        primaryBorderColor: '#519aba',
+        lineColor: '#8b949e',
+        secondaryColor: '#161b22',
+        tertiaryColor: '#0d1117'
+      }
+    });
+
+    // Scroll Animation
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.type-card, .mermaid-container').forEach(el => {
+      el.classList.add('animate-on-scroll');
+      observer.observe(el);
+    });
+
+    // Smooth scroll for navigation
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

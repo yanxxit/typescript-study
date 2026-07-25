@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>type-fest 使用指南 - TypeScript 实用类型集合</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #3178c6;
+      --primary-light: #519aba;
+      --primary-dark: #235a97;
+      --accent: #f7df1e;
+      --accent-warm: #ff6b6b;
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-code: #1c2128;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --success: #3fb950;
+      --error: #f85149;
+      --warning: #d29922;
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --orange: #f97316;
+      --gradient-1: linear-gradient(135deg, #3178c6, #519aba);
+      --gradient-2: linear-gradient(135deg, #a855f7, #ec4899);
+      --gradient-3: linear-gradient(135deg, #f7df1e, #f97316);
+      --gradient-4: linear-gradient(135deg, #3fb950, #519aba);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Hero */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 20%, rgba(168, 85, 247, 0.15), transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(247, 223, 30, 0.1), transparent 50%),
+                  var(--bg);
+      padding: 2rem;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.3) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 70%, rgba(247, 223, 30, 0.2) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      background: rgba(168, 85, 247, 0.2);
+      border: 1px solid var(--purple);
+      border-radius: 50px;
+      font-size: 0.9rem;
+      color: var(--purple);
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s ease 0.1s both;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 3rem;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .stat-item { text-align: center; }
+
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 800;
+      background: var(--gradient-3);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Navigation */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-inner::-webkit-scrollbar { display: none; }
+
+    .nav-link {
+      white-space: nowrap;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(168, 85, 247, 0.2);
+      color: var(--purple);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: 6rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .section-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+
+    .section-icon.basic { background: var(--gradient-4); }
+    .section-icon.objects { background: var(--gradient-1); }
+    .section-icon.strings { background: var(--gradient-2); }
+    .section-icon.arrays { background: var(--gradient-3); }
+    .section-icon.functions { background: linear-gradient(135deg, #a855f7, #ec4899); }
+    .section-icon.json { background: linear-gradient(135deg, #f97316, #ef4444); }
+    .section-icon.async { background: linear-gradient(135deg, #06b6d4, #3b82f6); }
+    .section-icon.guards { background: linear-gradient(135deg, #84cc16, #22c55e); }
+    .section-icon.naming { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+    .section-icon.logic { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
+
+    .section-title { font-size: 2rem; font-weight: 700; }
+    .section-subtitle { color: var(--text-muted); font-size: 1rem; }
+
+    /* Type Card */
+    .type-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .type-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--gradient-1);
+      border-radius: 4px 0 0 4px;
+    }
+
+    .type-card:hover {
+      border-color: var(--purple);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(168, 85, 247, 0.2);
+    }
+
+    .type-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .type-name {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--purple);
+    }
+
+    .type-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-core {
+      background: rgba(168, 85, 247, 0.2);
+      color: var(--purple);
+      border: 1px solid var(--purple);
+    }
+
+    .badge-common {
+      background: rgba(49, 120, 198, 0.2);
+      color: var(--primary-light);
+      border: 1px solid var(--primary);
+    }
+
+    .badge-advanced {
+      background: rgba(210, 153, 34, 0.2);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+    }
+
+    .type-translation {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .type-description {
+      margin-bottom: 1.5rem;
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    /* Code */
+    .code-wrapper {
+      position: relative;
+      margin: 1.5rem 0;
+    }
+
+    .code-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 0.4rem 1rem;
+      background: var(--purple);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 0 0 8px 0;
+      z-index: 1;
+    }
+
+    .code-label.output {
+      background: var(--success);
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      padding-top: 2.5rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    code { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+    .inline-code {
+      background: rgba(168, 85, 247, 0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--purple);
+    }
+
+    /* Syntax */
+    .keyword { color: #ff7b72; }
+    .type { color: #79c0ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .function { color: #d2a8ff; }
+    .property { color: #e6edf3; }
+
+    /* Mermaid */
+    .mermaid-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 2rem 0;
+      text-align: center;
+    }
+
+    .mermaid-container h4 {
+      margin-bottom: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Visual Diagram */
+    .visual-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      padding: 2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+
+    .diagram-box {
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+      min-width: 150px;
+    }
+
+    .diagram-box.input {
+      background: rgba(168, 85, 247, 0.2);
+      border: 2px solid var(--purple);
+    }
+
+    .diagram-box.output {
+      background: rgba(63, 185, 80, 0.2);
+      border: 2px solid var(--success);
+    }
+
+    .diagram-arrow {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .diagram-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .diagram-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    /* Principle Box */
+    .principle-box {
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1));
+      border: 1px solid var(--purple);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .principle-box h4 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--purple);
+      margin-bottom: 1rem;
+    }
+
+    /* Tip Box */
+    .tip-box {
+      background: rgba(63, 185, 80, 0.1);
+      border: 1px solid var(--success);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .tip-box h4 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--success);
+      margin-bottom: 1rem;
+    }
+
+    /* Warning Box */
+    .warning-box {
+      background: rgba(210, 153, 34, 0.1);
+      border: 1px solid var(--warning);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .warning-box h4 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--warning);
+      margin-bottom: 1rem;
+    }
+
+    /* Comparison Table */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .comparison-table th {
+      background: var(--purple);
+      padding: 1rem 1.5rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .comparison-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comparison-table tr:last-child td { border-bottom: none; }
+
+    .comparison-table tr:hover td {
+      background: rgba(168, 85, 247, 0.1);
+    }
+
+    /* Quick Ref */
+    .quick-ref-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .quick-ref-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .quick-ref-card:hover {
+      border-color: var(--purple);
+      transform: translateY(-2px);
+    }
+
+    .quick-ref-card .type-name { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .quick-ref-card .type-desc { color: var(--text-muted); font-size: 0.9rem; }
+    .quick-ref-card .type-example {
+      margin-top: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--purple);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 4rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .hero-stats { gap: 2rem; }
+      .stat-number { font-size: 2rem; }
+      .section-header { flex-direction: column; text-align: center; }
+      .visual-diagram { flex-direction: column; }
+      .diagram-arrow { transform: rotate(90deg); }
+    }
+
+    /* Scroll Animation */
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Pair Card */
+    .pair-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .pair-container { grid-template-columns: 1fr; }
+    }
+
+    .pair-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .pair-card h4 {
+      color: var(--purple);
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">npm 周下载量 3.3 亿</span>
+      <h1>type-fest 使用指南</h1>
+      <p>由 Sindre Sorhus 维护的 TypeScript 实用类型集合。补充 TypeScript 内置类型无法覆盖的大量应用场景。</p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">10+</div>
+          <div class="stat-label">核心类别</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">50+</div>
+          <div class="stat-label">实用类型</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">0</div>
+          <div class="stat-label">运行时开销</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#basics" class="nav-link">基础类型</a>
+      <a href="#objects" class="nav-link">对象操作</a>
+      <a href="#strings" class="nav-link">字符串操作</a>
+      <a href="#arrays" class="nav-link">数组/元组</a>
+      <a href="#functions" class="nav-link">函数类型</a>
+      <a href="#json" class="nav-link">JSON 类型</a>
+      <a href="#async" class="nav-link">异步类型</a>
+      <a href="#guards" class="nav-link">类型守卫</a>
+      <a href="#naming" class="nav-link">命名转换</a>
+      <a href="#logic" class="nav-link">条件逻辑</a>
+      <a href="#compare" class="nav-link">对比表</a>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <!-- Installation -->
+    <section class="section">
+      <div class="type-card" style="border-color: var(--purple);">
+        <div class="type-header">
+          <span class="type-name" style="font-size: 1.5rem;">安装</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">Terminal</span>
+          <pre><code>npm install type-fest</code></pre>
+        </div>
+        <div class="warning-box">
+          <h4>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+            </svg>
+            环境要求
+          </h4>
+          <ul style="padding-left: 1.5rem;">
+            <li>TypeScript >= 5.9</li>
+            <li>ESM 模块（<code class="inline-code">"type": "module"</code>）</li>
+            <li>tsconfig 中开启 <code class="inline-code">strict: true</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 1: Basic Types -->
+    <section id="basics" class="section">
+      <div class="section-header">
+        <div class="section-icon basic">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">基础类型</h2>
+          <p class="section-subtitle">匹配原始值、类和 TypedArray 的基础工具</p>
+        </div>
+      </div>
+
+      <!-- Primitive -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Primitive</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">原始类型</span>
+        </div>
+        <div class="type-description">
+          <p>匹配任何<a href="https://developer.mozilla.org/zh-CN/docs/Glossary/Primitive" style="color: var(--purple);">原始类型</a>：<code class="inline-code">string</code>、<code class="inline-code">number</code>、<code class="inline-code">bigint</code>、<code class="inline-code">boolean</code>、<code class="inline-code">symbol</code>、<code class="inline-code">null</code>、<code class="inline-code">undefined</code>。</p>
+        </div>
+
+        <div class="visual-diagram">
+          <div class="diagram-box input">
+            <div class="diagram-label">匹配的类型</div>
+            <div class="diagram-value">string | number | boolean<br>bigint | symbol | null | undefined</div>
+          </div>
+          <div class="diagram-arrow">Primitive</div>
+          <div class="diagram-box output">
+            <div class="diagram-label">排除的类型</div>
+            <div class="diagram-value">object, array, function, class...</div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">Primitive</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">function</span> <span class="function">printValue</span>(<span class="property">value</span>: <span class="type">Primitive</span>) {
+  console.<span class="function">log</span>(value)
+}
+
+<span class="function">printValue</span>(<span class="string">'hello'</span>)  <span class="comment">// ✅ string</span>
+<span class="function">printValue</span>(<span class="number">42</span>)       <span class="comment">// ✅ number</span>
+<span class="function">printValue</span>(<span class="keyword">true</span>)     <span class="comment">// ✅ boolean</span>
+<span class="function">printValue</span>({})    <span class="comment">// ❌ 对象不是原始类型</span></code></pre>
+        </div>
+      </div>
+
+      <!-- Class / Constructor -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Class / Constructor</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">类 / 构造函数</span>
+        </div>
+        <div class="type-description">
+          <p><code class="inline-code">Class</code> 匹配 class 本身，<code class="inline-code">Constructor</code> 匹配 class 的构造函数签名。</p>
+        </div>
+
+        <div class="mermaid-container">
+          <h4>Class vs Constructor 匹配关系</h4>
+          <pre class="mermaid">
+flowchart LR
+    A["class Animal"] --> B["Class 类型"]
+    A --> C["Constructor 类型"]
+    B --> D["new Animal()"]
+    C --> E["constructor(name)"]
+          </pre>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">Class</span>, <span class="type">Constructor</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">class</span> <span class="type">Animal</span> {
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="function">constructor</span>(<span class="property">name</span>: <span class="type">string</span>) { <span class="keyword">this</span>.name = name }
+}
+
+<span class="comment">// Class 匹配类本身</span>
+<span class="keyword">function</span> <span class="function">createInstance</span>&lt;<span class="type">T</span> <span class="keyword">extends</span> <span class="type">Class</span>&gt;(<span class="property">cls</span>: <span class="type">T</span>): <span class="type">InstanceType</span>&lt;<span class="type">T</span>&gt; {
+  <span class="keyword">return</span> <span class="keyword">new</span> (cls <span class="keyword">as</span> <span class="type">any</span>)()
+}
+
+<span class="comment">// Constructor 匹配构造函数签名</span>
+<span class="keyword">function</span> <span class="function">getClassConstructor</span>&lt;<span class="type">T</span> <span class="keyword">extends</span> <span class="type">Constructor</span>&gt;(<span class="property">ctr</span>: <span class="type">T</span>): <span class="type">T</span> {
+  <span class="keyword">return</span> ctr
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- TypedArray -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">TypedArray</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">类型化数组</span>
+        </div>
+        <div class="type-description">
+          <p>匹配任何 TypedArray（如 <code class="inline-code">Uint8Array</code>、<code class="inline-code">Float64Array</code> 等），用于处理二进制数据。</p>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">TypedArray</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">function</span> <span class="function">sum</span>(<span class="property">arr</span>: <span class="type">TypedArray</span>): <span class="type">number</span> {
+  <span class="keyword">let</span> total = <span class="number">0</span>
+  <span class="keyword">for</span> (<span class="keyword">const</span> num <span class="keyword">of</span> arr) total += num
+  <span class="keyword">return</span> total
+}
+
+<span class="function">sum</span>(<span class="keyword">new</span> <span class="type">Uint8Array</span>([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]))    <span class="comment">// 6</span>
+<span class="function">sum</span>(<span class="keyword">new</span> <span class="type">Float64Array</span>([<span class="number">1.5</span>, <span class="number">2.5</span>])) <span class="comment">// 4</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Object Utilities -->
+    <section id="objects" class="section">
+      <div class="section-header">
+        <div class="section-icon objects">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">对象工具类型</h2>
+          <p class="section-subtitle">转换和操作对象类型的工具集合</p>
+        </div>
+      </div>
+
+      <!-- Except -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Except&lt;Type, Keys&gt;</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">排除类型 - 从对象中排除指定键</span>
+        </div>
+        <div class="type-description">
+          <p>类似 TypeScript 内置的 <code class="inline-code">Omit</code>，但更灵活——可以排除不在类型定义中的键。</p>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">Except</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">interface</span> <span class="type">User</span> {
+  <span class="property">id</span>: <span class="type">number</span>
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">password</span>: <span class="type">string</span>
+  <span class="property">email</span>: <span class="type">string</span>
+}
+
+<span class="comment">// 只暴露给前端的安全字段</span>
+<span class="keyword">type</span> <span class="type">SafeUser</span> = <span class="type">Except</span>&lt;<span class="type">User</span>, <span class="string">'password'</span>&gt;
+<span class="comment">// { id: number; name: string; email: string }</span></code></pre>
+        </div>
+      </div>
+
+      <!-- Writable / WritableDeep -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Writable / WritableDeep</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">可写类型 - 移除 readonly 修饰符</span>
+        </div>
+        <div class="type-description">
+          <p><code class="inline-code">Writable</code> 移除顶层 <code class="inline-code">readonly</code>，<code class="inline-code">WritableDeep</code> 深层移除所有 <code class="inline-code">readonly</code>。</p>
+        </div>
+
+        <div class="visual-diagram">
+          <div class="diagram-box input" style="background: rgba(210, 153, 34, 0.2); border-color: var(--warning);">
+            <div class="diagram-label">readonly Config</div>
+            <div class="diagram-value">
+              readonly host: string<br>
+              readonly db: { readonly name: string }
+            </div>
+          </div>
+          <div class="diagram-arrow">→ WritableDeep →</div>
+          <div class="diagram-box output">
+            <div class="diagram-label">可变 Config</div>
+            <div class="diagram-value">
+              host: string<br>
+              db: { name: string }
+            </div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">Writable</span>, <span class="type">WritableDeep</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">interface</span> <span class="type">Config</span> {
+  <span class="keyword">readonly</span> <span class="property">host</span>: <span class="type">string</span>
+  <span class="keyword">readonly</span> <span class="property">port</span>: <span class="type">number</span>
+  <span class="keyword">readonly</span> <span class="property">db</span>: {
+    <span class="keyword">readonly</span> <span class="property">name</span>: <span class="type">string</span>
+  }
+}
+
+<span class="comment">// Writable: 只移除顶层 readonly</span>
+<span class="keyword">type</span> <span class="type">MutableConfig</span> = <span class="type">Writable</span>&lt;<span class="type">Config</span>&gt;
+<span class="comment">// { host: string; port: number; readonly db: { readonly name: string } }</span>
+
+<span class="comment">// WritableDeep: 深层移除所有 readonly</span>
+<span class="keyword">type</span> <span class="type">DeepMutableConfig</span> = <span class="type">WritableDeep</span>&lt;<span class="type">Config</span>&gt;
+<span class="comment">// { host: string; port: number; db: { name: string } }</span></code></pre>
+        </div>
+      </div>
+
+      <!-- ReadonlyDeep -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">ReadonlyDeep&lt;Type&gt;</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">深层只读类型 - 递归应用 readonly</span>
+        </div>
+        <div class="type-description">
+          <p><code class="inline-code">WritableDeep</code> 的反操作。深层将所有属性变为只读，非常适合 React 组件的 props。</p>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">ReadonlyDeep</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">interface</span> <span class="type">Config</span> {
+  <span class="property">db</span>: {
+    <span class="property">host</span>: <span class="type">string</span>
+    <span class="property">port</span>: <span class="type">number</span>
+  }
+  <span class="property">cache</span>: <span class="type">string</span>[]
+}
+
+<span class="keyword">type</span> <span class="type">ImmutableConfig</span> = <span class="type">ReadonlyDeep</span>&lt;<span class="type">Config</span>&gt;
+<span class="comment">// {</span>
+<span class="comment">//   readonly db: { readonly host: string; readonly port: number }</span>
+<span class="comment">//   readonly cache: readonly string[]</span>
+<span class="comment">// }</span>
+
+<span class="comment">// React 组件 props 应该是不可变的</span>
+<span class="keyword">type</span> <span class="type">Props</span> = <span class="type">ReadonlyDeep</span>&lt;{
+  <span class="property">user</span>: { <span class="property">name</span>: <span class="type">string</span>; <span class="property">age</span>: <span class="type">number</span> }
+  <span class="property">onUpdate</span>: () =&gt; <span class="type">void</span>
+}&gt;</code></pre>
+        </div>
+      </div>
+
+      <!-- Merge -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Merge / MergeDeep</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">合并类型 - 合并两个对象类型</span>
+        </div>
+        <div class="type-description">
+          <p>合并两个类型，第二个类型的键覆盖第一个。与交叉类型 <code class="inline-code">A & B</code> 不同，<code class="inline-code">Merge</code> 是后者覆盖前者。</p>
+        </div>
+
+        <div class="mermaid-container">
+          <h4>Merge vs 交叉类型</h4>
+          <pre class="mermaid">
+flowchart LR
+    A["类型 A<br/>{x: number}"] --> B["Merge"]
+    C["类型 B<br/>{y: string}"] --> B
+    B --> D["{x: number;<br/>y: string}"]
+    
+    A --> E["交叉 &"]
+    C --> E
+    E --> F["{x: number;<br/>y: string}"]
+          </pre>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">Merge</span>, <span class="type">MergeDeep</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">interface</span> <span class="type">A</span> { <span class="property">x</span>: <span class="type">number</span>; <span class="property">y</span>: <span class="type">string</span> }
+<span class="keyword">interface</span> <span class="type">B</span> { <span class="property">y</span>: <span class="type">number</span>; <span class="property">z</span>: <span class="type">boolean</span> }
+
+<span class="keyword">type</span> <span class="type">Result</span> = <span class="type">Merge</span>&lt;<span class="type">A</span>, <span class="type">B</span>&gt;
+<span class="comment">// { x: number; y: number; z: boolean }  ← y 被覆盖</span>
+
+<span class="comment">// MergeDeep 支持嵌套对象合并</span>
+<span class="keyword">interface</span> <span class="type">DeepA</span> { <span class="property">user</span>: { <span class="property">name</span>: <span class="type">string</span>; <span class="property">age</span>: <span class="type">number</span> } }
+<span class="keyword">interface</span> <span class="type">DeepB</span> { <span class="property">user</span>: { <span class="property">email</span>: <span class="type">string</span> } }
+
+<span class="keyword">type</span> <span class="type">DeepResult</span> = <span class="type">MergeDeep</span>&lt;<span class="type">DeepA</span>, <span class="type">DeepB</span>&gt;
+<span class="comment">// { user: { name: string; age: number; email: string } }</span></code></pre>
+        </div>
+      </div>
+
+      <!-- SetOptional / SetRequired -->
+      <div class="pair-container">
+        <div class="pair-card">
+          <h4>SetOptional&lt;Type, Keys&gt;</h4>
+          <p style="color: var(--text-muted); margin-bottom: 1rem;">将指定键设为可选</p>
+          <div class="code-wrapper">
+            <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">SetOptional</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">interface</span> <span class="type">User</span> {
+  <span class="property">id</span>: <span class="type">number</span>
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">email</span>?: <span class="type">string</span>
+}
+
+<span class="comment">// id 变为可选</span>
+<span class="keyword">type</span> <span class="type">Create</span> = <span class="type">SetOptional</span>&lt;
+  <span class="type">User</span>, <span class="string">'id'</span>
+&gt;</code></pre>
+          </div>
+        </div>
+
+        <div class="pair-card">
+          <h4>SetRequired&lt;Type, Keys&gt;</h4>
+          <p style="color: var(--text-muted); margin-bottom: 1rem;">将指定键设为必选</p>
+          <div class="code-wrapper">
+            <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">SetRequired</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">interface</span> <span class="type">User</span> {
+  <span class="property">id</span>: <span class="type">number</span>
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">email</span>?: <span class="type">string</span>
+}
+
+<span class="comment">// name 和 email 变为必选</span>
+<span class="keyword">type</span> <span class="type">Update</span> = <span class="type">SetRequired</span>&lt;
+  <span class="type">User</span>, <span class="string">'name'</span> | <span class="string">'email'</span>
+&gt;</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- RequiredDeep / PartialDeep -->
+      <div class="pair-container" style="margin-top: 1.5rem;">
+        <div class="pair-card">
+          <h4>RequiredDeep&lt;Type&gt;</h4>
+          <p style="color: var(--text-muted); margin-bottom: 1rem;">深层将所有属性设为必选</p>
+          <div class="code-wrapper">
+            <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">RequiredDeep</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">interface</span> <span class="type">Config</span> {
+  <span class="property">db</span>?: {
+    <span class="property">host</span>?: <span class="type">string</span>
+    <span class="property">port</span>?: <span class="type">number</span>
+  }
+}
+
+<span class="keyword">type</span> <span class="type">Strict</span> = <span class="type">RequiredDeep</span>&lt;
+  <span class="type">Config</span>
+&gt;
+<span class="comment">// { db: { host: string; port: number } }</span></code></pre>
+          </div>
+        </div>
+
+        <div class="pair-card">
+          <h4>PartialDeep&lt;Type&gt;</h4>
+          <p style="color: var(--text-muted); margin-bottom: 1rem;">深层将所有属性设为可选</p>
+          <div class="code-wrapper">
+            <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">PartialDeep</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">interface</span> <span class="type">Todo</span> {
+  <span class="property">title</span>: <span class="type">string</span>
+  <span class="property">meta</span>: {
+    <span class="property">createdAt</span>: <span class="type">Date</span>
+  }
+}
+
+<span class="keyword">type</span> <span class="type">Partial</span> = <span class="type">PartialDeep</span>&lt;
+  <span class="type">Todo</span>
+&gt;
+<span class="comment">// { title?: string; meta?: { createdAt?: Date } }</span></code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- PickDeep / OmitDeep -->
+      <div class="type-card" style="margin-top: 1.5rem;">
+        <div class="type-header">
+          <span class="type-name">PickDeep / OmitDeep</span>
+          <span class="type-badge badge-advanced">进阶</span>
+          <span class="type-translation">深层选取/排除 - 使用点号路径语法</span>
+        </div>
+        <div class="type-description">
+          <p>使用<strong>点号路径语法</strong>（如 <code class="inline-code">'user.name'</code>）从深层嵌套对象中选取或排除属性。</p>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">PickDeep</span>, <span class="type">OmitDeep</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">interface</span> <span class="type">AppState</span> {
+  <span class="property">user</span>: {
+    <span class="property">name</span>: <span class="type">string</span>
+    <span class="property">email</span>: <span class="type">string</span>
+    <span class="property">settings</span>: {
+      <span class="property">theme</span>: <span class="type">string</span>
+      <span class="property">lang</span>: <span class="type">string</span>
+    }
+  }
+  <span class="property">posts</span>: { <span class="property">id</span>: <span class="type">number</span>; <span class="property">title</span>: <span class="type">string</span> }[]
+}
+
+<span class="comment">// PickDeep: 使用点号路径选择深层属性</span>
+<span class="keyword">type</span> <span class="type">UserBasic</span> = <span class="type">PickDeep</span>&lt;<span class="type">AppState</span>, <span class="string">'user.name'</span> | <span class="string">'user.email'</span>&gt;
+<span class="comment">// { user: { name: string; email: string } }</span>
+
+<span class="comment">// OmitDeep: 排除指定路径</span>
+<span class="keyword">type</span> <span class="type">WithoutPosts</span> = <span class="type">OmitDeep</span>&lt;<span class="type">AppState</span>, <span class="string">'posts'</span>&gt;
+<span class="comment">// { user: { name: string; email: string; settings: { theme: string; lang: string } } }</span></code></pre>
+        </div>
+      </div>
+
+      <!-- LiteralUnion -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">LiteralUnion&lt;Literal, Primitive&gt;</span>
+          <span class="type-badge badge-advanced">进阶</span>
+          <span class="type-translation">字面量联合 - 兼顾自动补全和灵活性</span>
+        </div>
+        <div class="type-description">
+          <p>让 IDE 在联合类型中提供自动补全，同时允许自定义值。完美解决"预设值 + 自定义值"的需求。</p>
+        </div>
+
+        <div class="visual-diagram">
+          <div class="diagram-box input">
+            <div class="diagram-label">普通联合类型</div>
+            <div class="diagram-value">'primary' | 'secondary' | 'danger'</div>
+          </div>
+          <div class="diagram-arrow">LiteralUnion</div>
+          <div class="diagram-box output">
+            <div class="diagram-label">自动补全 + 自定义</div>
+            <div class="diagram-value">预设值 + string</div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">LiteralUnion</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="comment">// 普通联合：只能用预设值</span>
+<span class="keyword">type</span> <span class="type">Variant1</span> = <span class="string">'primary'</span> | <span class="string">'secondary'</span> | <span class="string">'danger'</span>
+
+<span class="comment">// LiteralUnion：自动补全 + 允许自定义</span>
+<span class="keyword">type</span> <span class="type">Variant2</span> = <span class="type">LiteralUnion</span>&lt;
+  <span class="string">'primary'</span> | <span class="string">'secondary'</span> | <span class="string">'danger'</span>,
+  <span class="type">string</span>
+&gt;
+
+<span class="keyword">const</span> v1: <span class="type">Variant2</span> = <span class="string">'primary'</span>    <span class="comment">// ✅ IDE 自动补全</span>
+<span class="keyword">const</span> v2: <span class="type">Variant2</span> = <span class="string">'danger'</span>     <span class="comment">// ✅ IDE 自动补全</span>
+<span class="keyword">const</span> v3: <span class="type">Variant2</span> = <span class="string">'my-custom'</span>  <span class="comment">// ✅ 也允许自定义值</span></code></pre>
+        </div>
+      </div>
+
+      <!-- Tagged -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Tagged&lt;Type, Tag&gt;</span>
+          <span class="type-badge badge-advanced">进阶</span>
+          <span class="type-translation">品牌类型 - 防止类型混淆</span>
+        </div>
+        <div class="type-description">
+          <p>创建标签类型（品牌类型），防止不同类型之间的意外混淆。虽然底层类型相同，但编译器会阻止混用。</p>
+        </div>
+
+        <div class="mermaid-container">
+          <h4>Tagged 类型安全机制</h4>
+          <pre class="mermaid">
+flowchart LR
+    A["UserId<br/>Tagged&lt;number, 'UserId'&gt;"] --> B["getUser(id)"]
+    C["OrderId<br/>Tagged&lt;number, 'OrderId'&gt;"] --> D["getOrder(id)"]
+    
+    E["userId: UserId"] --> B
+    F["orderId: OrderId"] --> B
+    F --> D
+    
+    style F fill:#f85149,stroke:#f85149,color:#fff
+          </pre>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">Tagged</span>, <span class="type">UnwrapTagged</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="comment">// 定义不同类型的 ID</span>
+<span class="keyword">type</span> <span class="type">UserId</span> = <span class="type">Tagged</span>&lt;<span class="type">number</span>, <span class="string">'UserId'</span>&gt;
+<span class="keyword">type</span> <span class="type">OrderId</span> = <span class="type">Tagged</span>&lt;<span class="type">number</span>, <span class="string">'OrderId'</span>&gt;
+
+<span class="keyword">function</span> <span class="function">getUser</span>(<span class="property">id</span>: <span class="type">UserId</span>) { <span class="comment">/* ... */</span> }
+<span class="keyword">function</span> <span class="function">getOrder</span>(<span class="property">id</span>: <span class="type">OrderId</span>) { <span class="comment">/* ... */</span> }
+
+<span class="keyword">const</span> userId = <span class="number">1</span> <span class="keyword">as</span> <span class="type">UserId</span>
+<span class="keyword">const</span> orderId = <span class="number">2</span> <span class="keyword">as</span> <span class="type">OrderId</span>
+
+<span class="function">getUser</span>(userId)    <span class="comment">// ✅ 类型匹配</span>
+<span class="function">getUser</span>(orderId)   <span class="comment">// ❌ 类型不匹配，防止传错 ID！</span>
+
+<span class="comment">// UnwrapTagged: 提取原始类型</span>
+<span class="keyword">type</span> <span class="type">RawUserId</span> = <span class="type">UnwrapTagged</span>&lt;<span class="type">UserId</span>&gt;  <span class="comment">// number</span></code></pre>
+        </div>
+      </div>
+
+      <!-- Exact -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Exact&lt;Type&gt;</span>
+          <span class="type-badge badge-advanced">进阶</span>
+          <span class="type-translation">精确类型 - 禁止额外属性</span>
+        </div>
+        <div class="type-description">
+          <p>严格检查类型，不允许传入未声明的额外属性。解决 TypeScript 结构化类型系统的弱点。</p>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">Exact</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">interface</span> <span class="type">ButtonProps</span> {
+  <span class="property">color</span>: <span class="type">string</span>
+  <span class="property">size</span>: <span class="type">number</span>
+  <span class="property">onClick</span>: () =&gt; <span class="type">void</span>
+}
+
+<span class="comment">// 普通类型：允许额外属性</span>
+<span class="keyword">function</span> <span class="function">createButton1</span>(<span class="property">props</span>: <span class="type">ButtonProps</span>) {}
+<span class="function">createButton1</span>({ <span class="property">color</span>: <span class="string">'red'</span>, <span class="property">size</span>: <span class="number">10</span>, <span class="property">onClick</span>: () =&gt; {}, <span class="property">extra</span>: <span class="keyword">true</span> })  <span class="comment">// ✅ 没报错</span>
+
+<span class="comment">// Exact：严格检查</span>
+<span class="keyword">function</span> <span class="function">createButton2</span>(<span class="property">props</span>: <span class="type">Exact</span>&lt;<span class="type">ButtonProps</span>, <span class="type">ButtonProps</span>&gt;) {}
+<span class="function">createButton2</span>({ <span class="property">color</span>: <span class="string">'red'</span>, <span class="property">size</span>: <span class="number">10</span>, <span class="property">onClick</span>: () =&gt; {} })  <span class="comment">// ✅</span>
+<span class="comment">// createButton2({ ..., extra: true })  // ❌ 不允许额外属性</span></code></pre>
+        </div>
+      </div>
+
+      <!-- ValueOf -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">ValueOf&lt;Type&gt;</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">值类型 - 获取对象所有值的联合类型</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">ValueOf</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">const</span> STATUS = {
+  <span class="property">PENDING</span>: <span class="string">'pending'</span>,
+  <span class="property">ACTIVE</span>: <span class="string">'active'</span>,
+  <span class="property">DELETED</span>: <span class="string">'deleted'</span>,
+} <span class="keyword">as const</span>
+
+<span class="keyword">type</span> <span class="type">Status</span> = <span class="type">ValueOf</span>&lt;<span class="keyword">typeof</span> STATUS&gt;
+<span class="comment">// 'pending' | 'active' | 'deleted'</span></code></pre>
+        </div>
+      </div>
+
+      <!-- ConditionalPick -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">ConditionalPick&lt;Type, Condition&gt;</span>
+          <span class="type-badge badge-advanced">进阶</span>
+          <span class="type-translation">条件选取 - 按条件筛选键</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">ConditionalPick</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">interface</span> <span class="type">Mixed</span> {
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">age</span>: <span class="type">number</span>
+  <span class="property">greet</span>: () =&gt; <span class="type">void</span>
+  <span class="property">count</span>: <span class="type">number</span>
+  <span class="property">action</span>: (<span class="property">x</span>: <span class="type">number</span>) =&gt; <span class="type">void</span>
+}
+
+<span class="comment">// 只保留函数类型的键</span>
+<span class="keyword">type</span> <span class="type">OnlyFunctions</span> = <span class="type">ConditionalPick</span>&lt;<span class="type">Mixed</span>, <span class="type">Function</span>&gt;
+<span class="comment">// { greet: () => void; action: (x: number) => void }</span>
+
+<span class="comment">// 只保留 number 类型的键</span>
+<span class="keyword">type</span> <span class="type">OnlyNumbers</span> = <span class="type">ConditionalPick</span>&lt;<span class="type">Mixed</span>, <span class="type">number</span>&gt;
+<span class="comment">// { age: number; count: number }</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: String Operations -->
+    <section id="strings" class="section">
+      <div class="section-header">
+        <div class="section-icon strings">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M4 7V4h16v3"/>
+            <path d="M9 20h6"/>
+            <path d="M12 4v16"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">字符串操作类型</h2>
+          <p class="section-subtitle">编译时字符串转换工具</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">CamelCase / KebabCase / PascalCase / SnakeCase</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">命名风格转换</span>
+        </div>
+
+        <div class="visual-diagram">
+          <div class="diagram-box input">
+            <div class="diagram-label">输入</div>
+            <div class="diagram-value">'foo_bar'</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div class="diagram-arrow">→ CamelCase → 'fooBar'</div>
+            <div class="diagram-arrow">→ PascalCase → 'FooBar'</div>
+            <div class="diagram-arrow">→ KebabCase → 'foo-bar'</div>
+            <div class="diagram-arrow">→ SnakeCase → 'foo_bar'</div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> {
+  <span class="type">CamelCase</span>, <span class="type">KebabCase</span>,
+  <span class="type">PascalCase</span>, <span class="type">SnakeCase</span>
+} <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">type</span> <span class="type">A</span> = <span class="type">CamelCase</span>&lt;<span class="string">'foo_bar'</span>&gt;     <span class="comment">// 'fooBar'</span>
+<span class="keyword">type</span> <span class="type">B</span> = <span class="type">KebabCase</span>&lt;<span class="string">'fooBar'</span>&gt;     <span class="comment">// 'foo-bar'</span>
+<span class="keyword">type</span> <span class="type">C</span> = <span class="type">PascalCase</span>&lt;<span class="string">'foo_bar'</span>&gt;   <span class="comment">// 'FooBar'</span>
+<span class="keyword">type</span> <span class="type">D</span> = <span class="type">SnakeCase</span>&lt;<span class="string">'fooBar'</span>&gt;     <span class="comment">// 'foo_bar'</span></code></pre>
+        </div>
+
+        <div class="principle-box">
+          <h4>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+            实际应用：API 字段名转换
+          </h4>
+          <pre style="margin-top: 1rem;"><code><span class="comment">// Python/Ruby 后端返回 snake_case，前端需要 camelCase</span>
+<span class="keyword">interface</span> <span class="type">RawUser</span> {
+  <span class="property">first_name</span>: <span class="type">string</span>
+  <span class="property">last_name</span>: <span class="type">string</span>
+  <span class="property">created_at</span>: <span class="type">string</span>
+}
+
+<span class="keyword">type</span> <span class="type">User</span> = <span class="type">CamelCasedProperties</span>&lt;<span class="type">RawUser</span>&gt;
+<span class="comment">// { firstName: string; lastName: string; createdAt: string }</span></code></pre>
+        </div>
+      </div>
+
+      <!-- Trim / Split / Replace -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Trim / Split / Replace</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">字符串裁剪、分割、替换</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">Trim</span>, <span class="type">Split</span>, <span class="type">Replace</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="comment">// Trim: 裁剪首尾空格</span>
+<span class="keyword">type</span> <span class="type">A</span> = <span class="type">Trim</span>&lt;<span class="string">'  hello  '</span>&gt;      <span class="comment">// 'hello'</span>
+
+<span class="comment">// Split: 按分隔符分割字符串</span>
+<span class="keyword">type</span> <span class="type">B</span> = <span class="type">Split</span>&lt;<span class="string">'a.b.c'</span>, <span class="string">'.'</span>&gt;    <span class="comment">// ['a', 'b', 'c']</span>
+
+<span class="comment">// Replace: 替换字符串</span>
+<span class="keyword">type</span> <span class="type">C</span> = <span class="type">Replace</span>&lt;<span class="string">'foo_bar'</span>, <span class="string">'_'</span>, <span class="string">'-'</span>&gt;  <span class="comment">// 'foo-bar'</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: Array/Tuple -->
+    <section id="arrays" class="section">
+      <div class="section-header">
+        <div class="section-icon arrays">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 3v18"/>
+            <path d="M15 3v18"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">数组/元组类型</h2>
+          <p class="section-subtitle">操作数组和元组的工具集合</p>
+        </div>
+      </div>
+
+      <!-- Arrayable -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Arrayable&lt;Type&gt;</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">可数组类型 - 值可以是单个或数组</span>
+        </div>
+
+        <div class="visual-diagram">
+          <div class="diagram-box input">
+            <div class="diagram-label">Arrayable&lt;number&gt;</div>
+            <div class="diagram-value">number | number[]</div>
+          </div>
+          <div class="diagram-arrow">→ ensureArray →</div>
+          <div class="diagram-box output">
+            <div class="diagram-label">输出</div>
+            <div class="diagram-value">number[]</div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">Arrayable</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">function</span> <span class="function">ensureArray</span>(<span class="property">value</span>: <span class="type">Arrayable</span>&lt;<span class="type">number</span>&gt;): <span class="type">number</span>[] {
+  <span class="keyword">return</span> Array.<span class="function">isArray</span>(value) ? value : [value]
+}
+
+<span class="function">ensureArray</span>(<span class="number">1</span>)       <span class="comment">// [1]</span>
+<span class="function">ensureArray</span>([<span class="number">1</span>, <span class="number">2</span>])  <span class="comment">// [1, 2]</span></code></pre>
+        </div>
+      </div>
+
+      <!-- TupleToUnion -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">TupleToUnion&lt;Tuple&gt;</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">元组转联合 - 将元组转换为联合类型</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">TupleToUnion</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">type</span> <span class="type">Colors</span> = <span class="type">TupleToUnion</span>&lt;[<span class="string">'red'</span>, <span class="string">'green'</span>, <span class="string">'blue'</span>]&gt;
+<span class="comment">// 'red' | 'green' | 'blue'</span></code></pre>
+        </div>
+      </div>
+
+      <!-- FixedLengthArray -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">FixedLengthArray&lt;Type, Length&gt;</span>
+          <span class="type-badge badge-advanced">进阶</span>
+          <span class="type-translation">固定长度数组 - 限制数组长度</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">FixedLengthArray</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">type</span> <span class="type">ThreeNumbers</span> = <span class="type">FixedLengthArray</span>&lt;<span class="type">number</span>, <span class="number">3</span>&gt;
+<span class="comment">// [number, number, number]</span>
+
+<span class="keyword">const</span> arr: <span class="type">ThreeNumbers</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]   <span class="comment">// ✅</span>
+<span class="comment">// const arr2: ThreeNumbers = [1, 2]   // ❌ 长度不对</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Function Types -->
+    <section id="functions" class="section">
+      <div class="section-header">
+        <div class="section-icon functions">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M4 4h16v16H4z"/>
+            <path d="M8 12h8"/>
+            <path d="M12 8v8"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">函数类型</h2>
+          <p class="section-subtitle">操作函数签名的工具集合</p>
+        </div>
+      </div>
+
+      <!-- SetReturnType -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">SetReturnType&lt;Type, ReturnType&gt;</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">设置返回类型 - 更改函数返回类型</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">SetReturnType</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">function</span> <span class="function">add</span>(<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>): <span class="type">number</span> {
+  <span class="keyword">return</span> a + b
+}
+
+<span class="comment">// 将返回类型改为字符串</span>
+<span class="keyword">type</span> <span class="type">StringAdd</span> = <span class="type">SetReturnType</span>&lt;<span class="keyword">typeof</span> add, <span class="type">string</span>&gt;
+<span class="comment">// (a: number, b: number) => string</span></code></pre>
+        </div>
+      </div>
+
+      <!-- SetParameterType -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">SetParameterType&lt;Type, Index, ParameterType&gt;</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">设置参数类型 - 替换函数参数类型</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">SetParameterType</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">function</span> <span class="function">greet</span>(<span class="property">name</span>: <span class="type">string</span>, <span class="property">age</span>: <span class="type">number</span>): <span class="type">string</span> {
+  <span class="keyword">return</span> <span class="string">`Hello </span>${name}<span class="string">, </span>${age}<span class="string">`</span>
+}
+
+<span class="comment">// 将第 0 个参数从 string 改为 number</span>
+<span class="keyword">type</span> <span class="type">NumericGreet</span> = <span class="type">SetParameterType</span>&lt;<span class="keyword">typeof</span> greet, <span class="number">0</span>, <span class="type">number</span>&gt;
+<span class="comment">// (name: number, age: number) => string</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: JSON Types -->
+    <section id="json" class="section">
+      <div class="section-header">
+        <div class="section-icon json">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <path d="M14 2v6h6"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">JSON 类型</h2>
+          <p class="section-subtitle">处理 JSON 序列化的工具类型</p>
+        </div>
+      </div>
+
+      <!-- JsonValue -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">JsonValue / JsonObject / JsonArray</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">JSON 值类型</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">JsonValue</span>, <span class="type">JsonObject</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">const</span> data: <span class="type">JsonValue</span> = {
+  <span class="property">name</span>: <span class="string">'Alice'</span>,
+  <span class="property">age</span>: <span class="number">30</span>,
+  <span class="property">tags</span>: [<span class="string">'admin'</span>, <span class="string">'user'</span>],
+  <span class="property">active</span>: <span class="keyword">true</span>,
+  <span class="property">meta</span>: <span class="keyword">null</span>
+}
+
+<span class="keyword">const</span> config: <span class="type">JsonObject</span> = {
+  <span class="property">host</span>: <span class="string">'localhost'</span>,
+  <span class="property">port</span>: <span class="number">3000</span>
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Jsonify -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Jsonify&lt;Type&gt;</span>
+          <span class="type-badge badge-advanced">进阶</span>
+          <span class="type-translation">JSON 化类型 - 转换为 JSON 可序列化版本</span>
+        </div>
+
+        <div class="visual-diagram">
+          <div class="diagram-box input">
+            <div class="diagram-label">原始类型</div>
+            <div class="diagram-value">
+              name: string<br>
+              date: Date<br>
+              fn: () => void
+            </div>
+          </div>
+          <div class="diagram-arrow">→ Jsonify →</div>
+          <div class="diagram-box output">
+            <div class="diagram-label">可序列化</div>
+            <div class="diagram-value">
+              name: string<br>
+              date: string<br>
+              fn: 被移除
+            </div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">Jsonify</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">interface</span> <span class="type">User</span> {
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">date</span>: <span class="type">Date</span>       <span class="comment">// Date 不能直接序列化</span>
+  <span class="property">id</span>: () =&gt; <span class="type">void</span>   <span class="comment">// 函数不能序列化</span>
+}
+
+<span class="keyword">type</span> <span class="type">Serialized</span> = <span class="type">Jsonify</span>&lt;<span class="type">User</span>&gt;
+<span class="comment">// { name: string }  // Date 和函数被移除/转换</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 7: Async Types -->
+    <section id="async" class="section">
+      <div class="section-header">
+        <div class="section-icon async">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            <path d="M21 3v5h-5"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">异步类型</h2>
+          <p class="section-subtitle">处理 Promise 和异步操作的工具</p>
+        </div>
+      </div>
+
+      <!-- Promisable -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Promisable&lt;Type&gt;</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">可 Promise 类型 - 同步或异步返回</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">Promisable</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="comment">// 返回值可以是同步或异步</span>
+<span class="keyword">function</span> <span class="function">getData</span>(): <span class="type">Promisable</span>&lt;<span class="type">string</span>&gt; {
+  <span class="keyword">if</span> (Math.<span class="function">random</span>() &gt; <span class="number">0.5</span>) {
+    <span class="keyword">return</span> <span class="string">'sync data'</span>  <span class="comment">// 同步返回</span>
+  }
+  <span class="keyword">return</span> Promise.<span class="function">resolve</span>(<span class="string">'async data'</span>)  <span class="comment">// 异步返回</span>
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- AsyncReturnType -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">AsyncReturnType&lt;Type&gt;</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">异步返回类型 - 解包 Promise 返回值</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">AsyncReturnType</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">async function</span> <span class="function">fetchUser</span>() {
+  <span class="keyword">return</span> { <span class="property">id</span>: <span class="number">1</span>, <span class="property">name</span>: <span class="string">'Alice'</span> }
+}
+
+<span class="keyword">type</span> <span class="type">UserType</span> = <span class="type">AsyncReturnType</span>&lt;<span class="keyword">typeof</span> fetchUser&gt;
+<span class="comment">// { id: number; name: string }  // 自动解包 Promise</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 8: Type Guards -->
+    <section id="guards" class="section">
+      <div class="section-header">
+        <div class="section-icon guards">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">类型守卫</h2>
+          <p class="section-subtitle">类型层面的条件判断工具</p>
+        </div>
+      </div>
+
+      <!-- If / IsAny / IsNever -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">If / IsAny / IsNever / IsUnknown</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">条件判断类型</span>
+        </div>
+
+        <div class="mermaid-container">
+          <h4>类型守卫工作流程</h4>
+          <pre class="mermaid">
+flowchart TD
+    A["输入类型 T"] --> B{"IsAny<T>?"}
+    B -->|true| C["返回 true"]
+    B -->|false| D{"IsNever<T>?"}
+    D -->|true| E["返回 true"]
+    D -->|false| F["返回 false"]
+    
+    G["If<条件, A, B>"] --> H{"条件?"}
+    H -->|true| I["返回 A"]
+    H -->|false| J["返回 B"]
+          </pre>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">If</span>, <span class="type">IsAny</span>, <span class="type">IsNever</span>, <span class="type">IsUnknown</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="comment">// IsAny: 判断是否为 any</span>
+<span class="keyword">type</span> <span class="type">A</span> = <span class="type">IsAny</span>&lt;<span class="type">any</span>&gt;     <span class="comment">// true</span>
+<span class="keyword">type</span> <span class="type">B</span> = <span class="type">IsAny</span>&lt;<span class="type">string</span>&gt;  <span class="comment">// false</span>
+
+<span class="comment">// IsNever: 判断是否为 never</span>
+<span class="keyword">type</span> <span class="type">C</span> = <span class="type">IsNever</span>&lt;<span class="keyword">never</span>&gt;   <span class="comment">// true</span>
+<span class="keyword">type</span> <span class="type">D</span> = <span class="type">IsNever</span>&lt;<span class="type">string</span>&gt;  <span class="comment">// false</span>
+
+<span class="comment">// IsUnknown: 判断是否为 unknown</span>
+<span class="keyword">type</span> <span class="type">E</span> = <span class="type">IsUnknown</span>&lt;<span class="type">unknown</span>&gt;  <span class="comment">// true</span>
+<span class="keyword">type</span> <span class="type">F</span> = <span class="type">IsUnknown</span>&lt;<span class="type">any</span>&gt;      <span class="comment">// false</span>
+
+<span class="comment">// If: 条件执行</span>
+<span class="keyword">type</span> <span class="type">Result</span> = <span class="type">If</span>&lt;<span class="type">IsAny</span>&lt;<span class="type">string</span>&gt;, <span class="string">'yes'</span>, <span class="string">'no'</span>&gt;  <span class="comment">// 'no'</span></code></pre>
+        </div>
+      </div>
+
+      <!-- IsLiteral -->
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">IsLiteral / IsStringLiteral / IsNumericLiteral</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">字面量类型判断</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">IsLiteral</span>, <span class="type">IsStringLiteral</span>, <span class="type">IsNumericLiteral</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">type</span> <span class="type">A</span> = <span class="type">IsLiteral</span>&lt;<span class="string">'hello'</span>&gt;      <span class="comment">// true（字符串字面量）</span>
+<span class="keyword">type</span> <span class="type">B</span> = <span class="type">IsLiteral</span>&lt;<span class="type">string</span>&gt;       <span class="comment">// false（宽泛类型）</span>
+<span class="keyword">type</span> <span class="type">C</span> = <span class="type">IsStringLiteral</span>&lt;<span class="string">'foo'</span>&gt;  <span class="comment">// true</span>
+<span class="keyword">type</span> <span class="type">D</span> = <span class="type">IsNumericLiteral</span>&lt;<span class="number">42</span>&gt;    <span class="comment">// true</span>
+<span class="keyword">type</span> <span class="type">E</span> = <span class="type">IsNumericLiteral</span>&lt;<span class="type">number</span>&gt; <span class="comment">// false</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 9: Naming Convention -->
+    <section id="naming" class="section">
+      <div class="section-header">
+        <div class="section-icon naming">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M4 7V4h16v3"/>
+            <path d="M9 20h6"/>
+            <path d="M12 4v16"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">命名风格转换</h2>
+          <p class="section-subtitle">对象键名的风格转换</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">CamelCasedProperties / KebabCasedProperties / SnakeCasedProperties</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">对象键名风格转换</span>
+        </div>
+
+        <div class="visual-diagram">
+          <div class="diagram-box input">
+            <div class="diagram-label">输入</div>
+            <div class="diagram-value">db_host: string<br>db_port: number</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div class="diagram-arrow">→ CamelCased → dbHost, dbPort</div>
+            <div class="diagram-arrow">→ KebabCased → db-host, db-port</div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> {
+  <span class="type">CamelCasedProperties</span>,
+  <span class="type">KebabCasedProperties</span>,
+  <span class="type">SnakeCasedProperties</span>
+} <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="keyword">interface</span> <span class="type">RawConfig</span> {
+  <span class="property">db_host</span>: <span class="type">string</span>
+  <span class="property">db_port</span>: <span class="type">number</span>
+  <span class="property">cache_ttl</span>: <span class="type">number</span>
+}
+
+<span class="keyword">type</span> <span class="type">CamelConfig</span> = <span class="type">CamelCasedProperties</span>&lt;<span class="type">RawConfig</span>&gt;
+<span class="comment">// { dbHost: string; dbPort: number; cacheTtl: number }</span>
+
+<span class="keyword">type</span> <span class="type">KebabConfig</span> = <span class="type">KebabCasedProperties</span>&lt;<span class="type">RawConfig</span>&gt;
+<span class="comment">// { db-host: string; db-port: number; cache-ttl: number }</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 10: Conditional Logic -->
+    <section id="logic" class="section">
+      <div class="section-header">
+        <div class="section-icon logic">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">条件逻辑类型</h2>
+          <p class="section-subtitle">类型层面的布尔运算</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">And / Or / Xor / AndAll / OrAll</span>
+          <span class="type-badge badge-advanced">进阶</span>
+          <span class="type-translation">布尔逻辑运算</span>
+        </div>
+
+        <div class="mermaid-container">
+          <h4>布尔逻辑真值表</h4>
+          <pre class="mermaid">
+flowchart LR
+    A["And"] --> B["true AND true = true"]
+    A --> C["true AND false = false"]
+    
+    D["Or"] --> E["false OR true = true"]
+    D --> F["false OR false = false"]
+    
+    G["Xor"] --> H["true XOR false = true"]
+    G --> I["true XOR true = false"]
+          </pre>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">import</span> <span class="keyword">type</span> { <span class="type">And</span>, <span class="type">Or</span>, <span class="type">Xor</span>, <span class="type">AndAll</span>, <span class="type">OrAll</span> } <span class="keyword">from</span> <span class="string">'type-fest'</span>
+
+<span class="comment">// 基本运算</span>
+<span class="keyword">type</span> <span class="type">A</span> = <span class="type">And</span>&lt;<span class="keyword">true</span>, <span class="keyword">true</span>&gt;     <span class="comment">// true</span>
+<span class="keyword">type</span> <span class="type">B</span> = <span class="type">And</span>&lt;<span class="keyword">true</span>, <span class="keyword">false</span>&gt;    <span class="comment">// false</span>
+<span class="keyword">type</span> <span class="type">C</span> = <span class="type">Or</span>&lt;<span class="keyword">false</span>, <span class="keyword">true</span>&gt;     <span class="comment">// true</span>
+<span class="keyword">type</span> <span class="type">D</span> = <span class="type">Xor</span>&lt;<span class="keyword">true</span>, <span class="keyword">false</span>&gt;    <span class="comment">// true</span>
+<span class="keyword">type</span> <span class="type">E</span> = <span class="type">Xor</span>&lt;<span class="keyword">true</span>, <span class="keyword">true</span>&gt;     <span class="comment">// false</span>
+
+<span class="comment">// 批量运算</span>
+<span class="keyword">type</span> <span class="type">F</span> = <span class="type">AndAll</span>&lt;[<span class="keyword">true</span>, <span class="keyword">true</span>, <span class="keyword">true</span>]&gt;     <span class="comment">// true</span>
+<span class="keyword">type</span> <span class="type">G</span> = <span class="type">AndAll</span>&lt;[<span class="keyword">true</span>, <span class="keyword">false</span>, <span class="keyword">true</span>]&gt;  <span class="comment">// false</span>
+<span class="keyword">type</span> <span class="type">H</span> = <span class="type">OrAll</span>&lt;[<span class="keyword">false</span>, <span class="keyword">false</span>, <span class="keyword">true</span>]&gt;  <span class="comment">// true</span>
+<span class="keyword">type</span> <span class="type">I</span> = <span class="type">OrAll</span>&lt;[<span class="keyword">false</span>, <span class="keyword">false</span>, <span class="keyword">false</span>]&gt; <span class="comment">// false</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparison Table -->
+    <section id="compare" class="section">
+      <div class="section-header">
+        <div class="section-icon objects">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+            <rect x="9" y="3" width="6" height="4" rx="1"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">对比：type-fest vs TypeScript 内置</h2>
+          <p class="section-subtitle">何时需要引入 type-fest</p>
+        </div>
+      </div>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>场景</th>
+            <th>TypeScript 内置</th>
+            <th>type-fest</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>排除键</td>
+            <td><code class="inline-code">Omit&lt;T, K&gt;</code></td>
+            <td><code class="inline-code">Except&lt;T, K&gt;</code></td>
+          </tr>
+          <tr>
+            <td>深层可选</td>
+            <td>—</td>
+            <td><code class="inline-code">PartialDeep&lt;T&gt;</code></td>
+          </tr>
+          <tr>
+            <td>深层必选</td>
+            <td>—</td>
+            <td><code class="inline-code">RequiredDeep&lt;T&gt;</code></td>
+          </tr>
+          <tr>
+            <td>深层只读</td>
+            <td><code class="inline-code">Readonly&lt;T&gt;</code>（浅）</td>
+            <td><code class="inline-code">ReadonlyDeep&lt;T&gt;</code>（深）</td>
+          </tr>
+          <tr>
+            <td>深层可写</td>
+            <td>—</td>
+            <td><code class="inline-code">WritableDeep&lt;T&gt;</code></td>
+          </tr>
+          <tr>
+            <td>合并类型</td>
+            <td><code class="inline-code">A & B</code>（交叉）</td>
+            <td><code class="inline-code">Merge&lt;A, B&gt;</code>（后者覆盖）</td>
+          </tr>
+          <tr>
+            <td>命名风格转换</td>
+            <td>—</td>
+            <td><code class="inline-code">CamelCase&lt;T&gt;</code> 等</td>
+          </tr>
+          <tr>
+            <td>JSON 类型</td>
+            <td>—</td>
+            <td><code class="inline-code">JsonValue</code> 等</td>
+          </tr>
+          <tr>
+            <td>品牌类型</td>
+            <td>—</td>
+            <td><code class="inline-code">Tagged&lt;T, N&gt;</code></td>
+          </tr>
+          <tr>
+            <td>字面量联合</td>
+            <td>—</td>
+            <td><code class="inline-code">LiteralUnion&lt;T&gt;</code></td>
+          </tr>
+          <tr>
+            <td>类型守卫</td>
+            <td>—</td>
+            <td><code class="inline-code">IsAny&lt;T&gt;</code> 等</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Summary -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon logic">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <path d="M22 4L12 14.01l-3-3"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">小结</h2>
+        </div>
+      </div>
+
+      <div class="type-card" style="border-color: var(--success);">
+        <div class="type-description">
+          <ul style="padding-left: 1.5rem; line-height: 2;">
+            <li><strong>对象操作</strong>：<code class="inline-code">Except</code>、<code class="inline-code">Merge</code>、<code class="inline-code">PartialDeep</code>、<code class="inline-code">RequiredDeep</code>、<code class="inline-code">WritableDeep</code>/<code class="inline-code">ReadonlyDeep</code> 是最常用的</li>
+            <li><strong>字符串操作</strong>：命名风格转换（<code class="inline-code">CamelCase</code> 等）在对接 API 时非常实用</li>
+            <li><strong>类型守卫</strong>：<code class="inline-code">If</code>、<code class="inline-code">IsAny</code>、<code class="inline-code">IsNever</code> 可以在类型层面做条件判断</li>
+            <li><strong>JSON/异步</strong>：<code class="inline-code">JsonValue</code>、<code class="inline-code">Promisable</code> 解决了序列化和异步场景的类型表达</li>
+            <li><strong>高级场景</strong>：<code class="inline-code">Tagged</code> 防止类型混淆，<code class="inline-code">LiteralUnion</code> 兼顾自动补全和灵活性，<code class="inline-code">Simplify</code> 改善 IDE 体验</li>
+          </ul>
+          <p style="margin-top: 1.5rem; color: var(--purple); font-weight: 600;">
+            type-fest 不是"全都要用"，而是按需引入——当你发现 TypeScript 内置类型搞不定时，先来这里找找。
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>type-fest 使用指南 - TypeScript 实用类型集合</p>
+    <p style="margin-top: 0.5rem;">补充 TypeScript 内置类型无法覆盖的大量应用场景</p>
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#a855f7',
+        primaryTextColor: '#e6edf3',
+        primaryBorderColor: '#c084fc',
+        lineColor: '#8b949e',
+        secondaryColor: '#161b22',
+        tertiaryColor: '#0d1117'
+      }
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.type-card, .mermaid-container').forEach(el => {
+      el.classList.add('animate-on-scroll');
+      observer.observe(el);
+    });
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(link.getAttribute('href').substring(1));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>
