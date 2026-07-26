@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeScript 6.0 新特性完全指南</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #3178c6;
+      --primary-light: #519aba;
+      --primary-dark: #235a97;
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-code: #1c2128;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --success: #3fb950;
+      --error: #f85149;
+      --warning: #d29922;
+      --sky: #0ea5e9;
+      --blue: #3b82f6;
+      --indigo: #6366f1;
+      --gradient-1: linear-gradient(135deg, #3b82f6, #0ea5e9);
+      --gradient-2: linear-gradient(135deg, #6366f1, #8b5cf6);
+      --gradient-new: linear-gradient(135deg, #10b981, #06b6d4);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 20%, rgba(59, 130, 246, 0.15), transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(16, 185, 129, 0.1), transparent 50%),
+                  var(--bg);
+      padding: 2rem;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.3) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid var(--blue);
+      border-radius: 50px;
+      font-size: 0.9rem;
+      color: var(--blue);
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s ease 0.1s both;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 3rem;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .stat-item { text-align: center; }
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 0.9rem; color: var(--text-muted); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-inner::-webkit-scrollbar { display: none; }
+
+    .nav-link {
+      white-space: nowrap;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--blue);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    .section { margin-bottom: 6rem; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .section-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+
+    .section-icon.new { background: var(--gradient-new); }
+    .section-icon.advanced { background: var(--gradient-1); }
+    .section-icon.breaking { background: linear-gradient(135deg, #ef4444, #f97316); }
+
+    .section-title { font-size: 2rem; font-weight: 700; }
+    .section-subtitle { color: var(--text-muted); font-size: 1rem; }
+
+    .type-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .type-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--gradient-1);
+      border-radius: 4px 0 0 4px;
+    }
+
+    .type-card.new::before { background: var(--gradient-new); }
+    .type-card.breaking::before { background: linear-gradient(135deg, #ef4444, #f97316); }
+
+    .type-card:hover {
+      border-color: var(--blue);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+    }
+
+    .type-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .type-name {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--blue);
+    }
+
+    .type-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-new { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
+    .badge-breaking { background: rgba(239, 68, 68, 0.2); color: var(--error); border: 1px solid var(--error); }
+    .badge-deprecated { background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid var(--warning); }
+    .badge-core { background: rgba(59, 130, 246, 0.2); color: var(--blue); border: 1px solid var(--blue); }
+
+    .type-translation { color: var(--text-muted); font-size: 0.95rem; }
+    .type-description { margin-bottom: 1.5rem; color: var(--text); line-height: 1.8; }
+
+    .code-wrapper { position: relative; margin: 1.5rem 0; }
+
+    .code-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 0.4rem 1rem;
+      background: var(--blue);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 0 0 8px 0;
+      z-index: 1;
+    }
+
+    .code-label.new { background: var(--success); }
+    .code-label.deprecated { background: var(--warning); }
+
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      padding-top: 2.5rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    code { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+    .inline-code {
+      background: rgba(59, 130, 246, 0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--blue);
+    }
+
+    .keyword { color: #ff7b72; }
+    .type { color: #79c0ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .function { color: #d2a8ff; }
+    .property { color: #e6edf3; }
+
+    .mermaid-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 2rem 0;
+      text-align: center;
+    }
+
+    .mermaid-container h4 {
+      margin-bottom: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .api-table th {
+      background: var(--blue);
+      padding: 1rem 1.5rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .api-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .api-table tr:last-child td { border-bottom: none; }
+    .api-table tr:hover td { background: rgba(59, 130, 246, 0.1); }
+
+    .footer {
+      text-align: center;
+      padding: 4rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .hero-stats { gap: 2rem; }
+      .stat-number { font-size: 2rem; }
+      .section-header { flex-direction: column; text-align: center; }
+    }
+
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">TypeScript 6.0</span>
+      <h1>新特性完全指南</h1>
+      <p>TypeScript 6.0 是为 7.0（原生编译器）做准备的重要过渡版本。新特性、新默认值、破坏性变更全覆盖。</p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">8</div>
+          <div class="stat-label">新特性</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">13</div>
+          <div class="stat-label">废弃选项</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">7</div>
+          <div class="stat-label">默认值变更</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#overview" class="nav-link">新特性概览</a>
+      <a href="#this" class="nav-link">this-less 推断</a>
+      <a href="#subpath" class="nav-link">Subpath Imports</a>
+      <a href="#module" class="nav-link">模块配置</a>
+      <a href="#es2025" class="nav-link">es2025</a>
+      <a href="#temporal" class="nav-link">Temporal API</a>
+      <a href="#map" class="nav-link">getOrInsert</a>
+      <a href="#regexp" class="nav-link">RegExp.escape</a>
+      <a href="#breaking" class="nav-link">破坏性变更</a>
+      <a href="#migrate" class="nav-link">迁移指南</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section id="overview" class="section">
+      <div class="section-header">
+        <div class="section-icon new">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">新特性概览</h2>
+          <p class="section-subtitle">TypeScript 6.0 的新功能</p>
+        </div>
+      </div>
+
+      <div class="type-card new">
+        <div class="type-header">
+          <span class="type-name">TypeScript 6.0 New Features</span>
+        </div>
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>特性</th>
+              <th>说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline-code">this-less 函数推断</code></td>
+              <td>改进无 this 函数的类型推断</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">Subpath Imports #/</code></td>
+              <td>支持以 #/ 开头的子路径导入</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">bundler + commonjs</code></td>
+              <td>moduleResolution bundler 可与 module commonjs 组合</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">es2025</code></td>
+              <td>新增 ES2025 目标和库</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">Temporal API</code></td>
+              <td>内置 Temporal 类型</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">getOrInsert</code></td>
+              <td>Map 的 upsert 方法</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">RegExp.escape</code></td>
+              <td>正则表达式转义函数</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">dom.iterable</code></td>
+              <td>dom 库自动包含 dom.iterable</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="this" class="section">
+      <div class="section-header">
+        <div class="section-icon new">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">this-less 函数推断改进</h2>
+          <p class="section-subtitle">无 this 函数的类型推断</p>
+        </div>
+      </div>
+
+      <div class="type-card new">
+        <div class="type-header">
+          <span class="type-name">改进方法语法的推断</span>
+          <span class="type-badge badge-new">新特性</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label deprecated">TS 5.x - 报错</span>
+          <pre><code><span class="comment">// ❌ TypeScript 5.x：方法语法报错</span>
+callIt({
+  consume(y) { <span class="keyword">return</span> y.<span class="function">toFixed</span>() },  <span class="comment">// y 是 unknown</span>
+  produce(x: <span class="type">number</span>) { <span class="keyword">return</span> x * <span class="number">2</span> }
+})</code></pre>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label new">TS 6.0 - 正常工作</span>
+          <pre><code><span class="comment">// ✅ TypeScript 6.0：方法语法也能正常工作</span>
+callIt({
+  consume(y) { <span class="keyword">return</span> y.<span class="function">toFixed</span>() },  <span class="comment">// y 正确推断为 number</span>
+  produce(x: <span class="type">number</span>) { <span class="keyword">return</span> x * <span class="number">2</span> }
+})</code></pre>
+        </div>
+        <div class="type-description">
+          <p><strong>原理</strong>：TypeScript 6.0 检查函数是否实际使用了 <code class="inline-code">this</code>。如果函数没有使用 <code class="inline-code">this</code>，则不将其视为上下文敏感函数，从而优先参与类型推断。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="subpath" class="section">
+      <div class="section-header">
+        <div class="section-icon new">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">Subpath Imports 以 #/ 开头</h2>
+          <p class="section-subtitle">更简洁的导入路径</p>
+        </div>
+      </div>
+
+      <div class="type-card new">
+        <div class="type-header">
+          <span class="type-name">#/  前缀</span>
+          <span class="type-badge badge-new">新特性</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">package.json</span>
+          <pre><code>{
+  <span class="property">"imports"</span>: {
+    <span class="comment">// 之前：需要额外的段名</span>
+    <span class="property">"#root/*"</span>: <span class="string">"./dist/*"</span>
+
+    <span class="comment">// 现在：直接使用 #/</span>
+    <span class="property">"#/*"</span>: <span class="string">"./dist/*"</span>
+  }
+}</code></pre>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">导入</span>
+          <pre><code><span class="comment">// 使用 #/ 前缀导入</span>
+<span class="keyword">import</span> * <span class="keyword">as</span> utils <span class="keyword">from</span> <span class="string">'#/utils.js'</span>
+
+<span class="comment">// 要求 moduleResolution 为 nodenext 或 bundler</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="module" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2v20"/>
+            <path d="M2 12h20"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">模块配置改进</h2>
+          <p class="section-subtitle">bundler + commonjs 组合</p>
+        </div>
+      </div>
+
+      <div class="type-card new">
+        <div class="type-header">
+          <span class="type-name">moduleResolution bundler + module commonjs</span>
+          <span class="type-badge badge-new">新特性</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label new">TS 6.0 - 现在支持</span>
+          <pre><code>{
+  <span class="property">"compilerOptions"</span>: {
+    <span class="property">"moduleResolution"</span>: <span class="string">"bundler"</span>,
+    <span class="property">"module"</span>: <span class="string">"commonjs"</span>  <span class="comment">// ✅ 现在支持</span>
+  }
+}</code></pre>
+        </div>
+        <div class="type-description">
+          <p>这是从 <code class="inline-code">moduleResolution: node</code> 迁移的推荐路径。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="es2025" class="section">
+      <div class="section-header">
+        <div class="section-icon new">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <path d="M22 4L12 14.01l-3-3"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">es2025 目标和库</h2>
+          <p class="section-subtitle">支持最新 ES 特性</p>
+        </div>
+      </div>
+
+      <div class="type-card new">
+        <div class="type-header">
+          <span class="type-name">es2025</span>
+          <span class="type-badge badge-new">新特性</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">tsconfig.json</span>
+          <pre><code>{
+  <span class="property">"compilerOptions"</span>: {
+    <span class="property">"target"</span>: <span class="string">"es2025"</span>,
+    <span class="property">"lib"</span>: [<span class="string">"es2025"</span>]
+  }
+}</code></pre>
+        </div>
+        <div class="type-description">
+          <p>新增类型：<code class="inline-code">RegExp.escape</code>、<code class="inline-code">Promise.try</code>、<code class="inline-code">Iterator</code> 方法、<code class="inline-code">Set</code> 方法</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="temporal" class="section">
+      <div class="section-header">
+        <div class="section-icon new">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">Temporal API 类型</h2>
+          <p class="section-subtitle">下一代日期时间 API</p>
+        </div>
+      </div>
+
+      <div class="type-card new">
+        <div class="type-header">
+          <span class="type-name">Temporal</span>
+          <span class="type-badge badge-new">新特性</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label new">新 API</span>
+          <pre><code><span class="comment">// 需要 target: esnext 或 lib: ["esnext"]</span>
+<span class="keyword">let</span> yesterday = Temporal.Now.<span class="function">instant</span>().<span class="function">subtract</span>({
+  <span class="property">hours</span>: <span class="number">24</span>
+})
+
+<span class="keyword">let</span> tomorrow = Temporal.Now.<span class="function">instant</span>().<span class="function">add</span>({
+  <span class="property">hours</span>: <span class="number">24</span>
+})
+
+console.<span class="function">log</span>(<span class="string">`Yesterday: ${</span>yesterday<span class="string">}`</span>)
+console.<span class="function">log</span>(<span class="string">`Tomorrow: ${</span>tomorrow<span class="string">}`</span>)</code></pre>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">tsconfig.json</span>
+          <pre><code>{
+  <span class="property">"compilerOptions"</span>: {
+    <span class="property">"target"</span>: <span class="string">"esnext"</span>,
+    <span class="property">"lib"</span>: [<span class="string">"esnext"</span>]
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="map" class="section">
+      <div class="section-header">
+        <div class="section-icon new">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M16 18l6-6-6-6"/>
+            <path d="M8 6l-6 6 6 6"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">Map 的 getOrInsert 方法</h2>
+          <p class="section-subtitle">Upsert 操作</p>
+        </div>
+      </div>
+
+      <div class="type-card new">
+        <div class="type-header">
+          <span class="type-name">getOrInsert / getOrInsertComputed</span>
+          <span class="type-badge badge-new">新特性</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label deprecated">之前 - 冗长</span>
+          <pre><code><span class="keyword">function</span> <span class="function">processOptions</span>(<span class="property">options</span>: <span class="type">Map</span>&lt;<span class="type">string</span>, <span class="type">unknown</span>&gt;) {
+  <span class="keyword">let</span> value: <span class="type">unknown</span>
+  <span class="keyword">if</span> (options.<span class="function">has</span>(<span class="string">'strict'</span>)) {
+    value = options.<span class="function">get</span>(<span class="string">'strict'</span>)
+  } <span class="keyword">else</span> {
+    value = <span class="keyword">true</span>
+    options.<span class="function">set</span>(<span class="string">'strict'</span>, value)
+  }
+}</code></pre>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label new">现在 - 简洁</span>
+          <pre><code><span class="keyword">function</span> <span class="function">processOptions</span>(<span class="property">options</span>: <span class="type">Map</span>&lt;<span class="type">string</span>, <span class="type">unknown</span>&gt;) {
+  <span class="keyword">const</span> value = options.<span class="function">getOrInsert</span>(<span class="string">'strict'</span>, <span class="keyword">true</span>)
+}
+
+<span class="comment">// 使用计算函数</span>
+<span class="keyword">const</span> value = someMap.<span class="function">getOrInsertComputed</span>(<span class="string">'key'</span>, () =&gt; {
+  <span class="keyword">return</span> <span class="function">computeExpensiveValue</span>()
+})</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="regexp" class="section">
+      <div class="section-header">
+        <div class="section-icon new">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">RegExp.escape</h2>
+          <p class="section-subtitle">正则表达式转义</p>
+        </div>
+      </div>
+
+      <div class="type-card new">
+        <div class="type-header">
+          <span class="type-name">RegExp.escape</span>
+          <span class="type-badge badge-new">新特性</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label new">新 API</span>
+          <pre><code><span class="keyword">function</span> <span class="function">matchWholeWord</span>(<span class="property">word</span>: <span class="type">string</span>, <span class="property">text</span>: <span class="type">string</span>) {
+  <span class="keyword">const</span> escapedWord = <span class="type">RegExp</span>.<span class="function">escape</span>(word)
+  <span class="keyword">const</span> regex = <span class="keyword">new</span> <span class="type">RegExp</span>(<span class="string">`\\b${</span>escapedWord<span class="string">}\\b`</span>, <span class="string">'g'</span>)
+  <span class="keyword">return</span> text.<span class="function">match</span>(regex)
+}
+
+<span class="comment">// 自动转义特殊字符：* + ? ( ) 等</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="breaking" class="section">
+      <div class="section-header">
+        <div class="section-icon breaking">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">破坏性变更与废弃</h2>
+          <p class="section-subtitle">默认值变更和废弃选项</p>
+        </div>
+      </div>
+
+      <div class="type-card breaking">
+        <div class="type-header">
+          <span class="type-name">默认值变更</span>
+          <span class="type-badge badge-breaking">破坏性变更</span>
+        </div>
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>选项</th>
+              <th>旧默认值</th>
+              <th>新默认值</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline-code">strict</code></td>
+              <td><code class="inline-code">false</code></td>
+              <td><code class="inline-code">true</code></td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">module</code></td>
+              <td><code class="inline-code">commonjs</code></td>
+              <td><code class="inline-code">esnext</code></td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">target</code></td>
+              <td><code class="inline-code">es3</code></td>
+              <td><code class="inline-code">es2025</code></td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">rootDir</code></td>
+              <td>自动推断</td>
+              <td><code class="inline-code">.</code></td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">types</code></td>
+              <td>自动包含所有</td>
+              <td><code class="inline-code">[]</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="type-card breaking">
+        <div class="type-header">
+          <span class="type-name">废弃的选项</span>
+          <span class="type-badge badge-deprecated">废弃</span>
+        </div>
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>选项</th>
+              <th>状态</th>
+              <th>替代方案</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline-code">target: es5</code></td>
+              <td>废弃</td>
+              <td>使用 <code class="inline-code">es2015</code></td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">--moduleResolution node</code></td>
+              <td>废弃</td>
+              <td><code class="inline-code">nodenext</code> 或 <code class="inline-code">bundler</code></td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">--module amd/umd/systemjs</code></td>
+              <td>废弃</td>
+              <td>使用 ESM</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">--baseUrl</code></td>
+              <td>废弃</td>
+              <td>直接使用 <code class="inline-code">paths</code></td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">--outFile</code></td>
+              <td>移除</td>
+              <td>使用打包工具</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">module</code> 关键字</td>
+              <td>废弃</td>
+              <td>使用 <code class="inline-code">namespace</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="migrate" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">迁移到 TypeScript 6.0</h2>
+          <p class="section-subtitle">升级指南</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">迁移步骤</span>
+          <span class="type-badge badge-core">指南</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">推荐配置</span>
+          <pre><code>{
+  <span class="property">"compilerOptions"</span>: {
+    <span class="comment">// 1. 设置 types</span>
+    <span class="property">"types"</span>: [<span class="string">"node"</span>, <span class="string">"jest"</span>],
+
+    <span class="comment">// 2. 设置 rootDir</span>
+    <span class="property">"rootDir"</span>: <span class="string">"./src"</span>,
+
+    <span class="comment">// 3. 设置 module 和 moduleResolution</span>
+    <span class="property">"module"</span>: <span class="string">"esnext"</span>,
+    <span class="property">"moduleResolution"</span>: <span class="string">"bundler"</span>,
+
+    <span class="comment">// 4. 设置 target</span>
+    <span class="property">"target"</span>: <span class="string">"es2020"</span>,
+
+    <span class="comment">// 5. 如果需要旧行为</span>
+    <span class="property">"strict"</span>: <span class="keyword">false</span>,
+    <span class="property">"ignoreDeprecations"</span>: <span class="string">"6.0"</span>
+  }
+}</code></pre>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label deprecated">常见错误修复</span>
+          <pre><code><span class="comment">// 错误：Cannot find module '...'</span>
+<span class="comment">// 修复：添加 types</span>
+{
+  <span class="property">"compilerOptions"</span>: {
+    <span class="property">"types"</span>: [<span class="string">"node"</span>]
+  }
+}
+
+<span class="comment">// 错误：文件输出到错误目录</span>
+<span class="comment">// 修复：显式设置 rootDir</span>
+{
+  <span class="property">"compilerOptions"</span>: {
+    <span class="property">"rootDir"</span>: <span class="string">"./src"</span>
+  }
+}
+
+<span class="comment">// 错误：Import assertions have been replaced</span>
+<span class="comment">// 修复：使用 with 代替 asserts</span>
+<span class="keyword">import</span> blob <span class="keyword">from</span> <span class="string">'./data.json'</span> <span class="keyword">with</span> { <span class="property">type</span>: <span class="string">'json'</span> }</code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>TypeScript 6.0 新特性完全指南</p>
+    <p style="margin-top: 0.5rem;">为 TypeScript 7.0（原生编译器）做准备</p>
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#3b82f6',
+        primaryTextColor: '#e6edf3',
+        primaryBorderColor: '#60a5fa',
+        lineColor: '#8b949e',
+        secondaryColor: '#161b22',
+        tertiaryColor: '#0d1117'
+      }
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.type-card').forEach(el => {
+      el.classList.add('animate-on-scroll');
+      observer.observe(el);
+    });
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(link.getAttribute('href').substring(1));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>

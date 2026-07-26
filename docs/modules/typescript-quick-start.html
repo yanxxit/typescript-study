@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeScript 日常开发快速入门</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #3178c6;
+      --primary-light: #519aba;
+      --primary-dark: #235a97;
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-code: #1c2128;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --success: #3fb950;
+      --error: #f85149;
+      --warning: #d29922;
+      --sky: #0ea5e9;
+      --blue: #3b82f6;
+      --cyan: #06b6d4;
+      --gradient-1: linear-gradient(135deg, #3b82f6, #0ea5e9);
+      --gradient-2: linear-gradient(135deg, #06b6d4, #14b8a6);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 20%, rgba(59, 130, 246, 0.15), transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(6, 182, 212, 0.1), transparent 50%),
+                  var(--bg);
+      padding: 2rem;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.3) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid var(--blue);
+      border-radius: 50px;
+      font-size: 0.9rem;
+      color: var(--blue);
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s ease 0.1s both;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 3rem;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .stat-item { text-align: center; }
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 0.9rem; color: var(--text-muted); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-inner::-webkit-scrollbar { display: none; }
+
+    .nav-link {
+      white-space: nowrap;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--blue);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    .section { margin-bottom: 4rem; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--gradient-1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: var(--blue);
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+    }
+
+    .card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .card p {
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .code-wrapper { position: relative; margin: 1rem 0; }
+
+    .code-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 0.4rem 1rem;
+      background: var(--blue);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 0 0 8px 0;
+      z-index: 1;
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      padding-top: 2.5rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    code { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+    .inline-code {
+      background: rgba(59, 130, 246, 0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--blue);
+    }
+
+    .keyword { color: #ff7b72; }
+    .type { color: #79c0ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .function { color: #d2a8ff; }
+    .property { color: #e6edf3; }
+
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .api-table th {
+      background: var(--blue);
+      padding: 1rem 1.5rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .api-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .api-table tr:last-child td { border-bottom: none; }
+    .api-table tr:hover td { background: rgba(59, 130, 246, 0.1); }
+
+    .footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .hero-stats { gap: 2rem; }
+      .stat-number { font-size: 2rem; }
+      .section-header { flex-direction: column; text-align: center; }
+    }
+
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">TypeScript 快速入门</span>
+      <h1>日常开发快速入门</h1>
+      <p>聚焦日常开发中最常用的 TypeScript 特性，快速上手并高效使用。</p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">12</div>
+          <div class="stat-label">核心章节</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">30+</div>
+          <div class="stat-label">代码示例</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">5min</div>
+          <div class="stat-label">快速上手</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#setup" class="nav-link">快速开始</a>
+      <a href="#types" class="nav-link">基础类型</a>
+      <a href="#interfaces" class="nav-link">接口与类型</a>
+      <a href="#functions" class="nav-link">函数</a>
+      <a href="#classes" class="nav-link">类</a>
+      <a href="#enums" class="nav-link">枚举</a>
+      <a href="#generics" class="nav-link">泛型</a>
+      <a href="#guards" class="nav-link">类型守卫</a>
+      <a href="#mapped" class="nav-link">映射类型</a>
+      <a href="#async" class="nav-link">async/await</a>
+      <a href="#modules" class="nav-link">模块</a>
+      <a href="#patterns" class="nav-link">常用模式</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <!-- 快速开始 -->
+    <section id="setup" class="section">
+      <div class="section-header">
+        <div class="section-num">0</div>
+        <div>
+          <h2 class="section-title">快速开始</h2>
+          <p class="section-desc">5 分钟上手 TypeScript</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🚀 初始化项目</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="comment"># 初始化项目</span>
+npm init -y
+npm install typescript --save-dev
+
+<span class="comment"># 创建 tsconfig.json</span>
+npx tsc --init
+
+<span class="comment"># 编译 TypeScript</span>
+npx tsc
+
+<span class="comment"># 运行 TypeScript</span>
+npx ts-node index.ts</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 基础类型 -->
+    <section id="types" class="section">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <div>
+          <h2 class="section-title">基础类型</h2>
+          <p class="section-desc">TypeScript 的 7 种原始类型和特殊类型</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📦 原始类型</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">let</span> name: <span class="type">string</span> = <span class="string">'Alice'</span>
+<span class="keyword">let</span> age: <span class="type">number</span> = <span class="number">30</span>
+<span class="keyword">let</span> active: <span class="type">boolean</span> = <span class="keyword">true</span>
+<span class="keyword">let</span> data: <span class="keyword">null</span> = <span class="keyword">null</span>
+<span class="keyword">let</span> value: <span class="type">undefined</span> = <span class="type">undefined</span>
+<span class="keyword">const</span> id: <span class="type">symbol</span> = <span class="function">Symbol</span>(<span class="string">'id'</span>)
+<span class="keyword">const</span> big: <span class="type">bigint</span> = <span class="number">12345678901234567890n</span></code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>⚠️ 特殊类型</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">let</span> anything: <span class="type">any</span> = <span class="string">'hello'</span>      <span class="comment">// 任意类型（不推荐）</span>
+<span class="keyword">let</span> safe: <span class="type">unknown</span> = <span class="string">'hello'</span>      <span class="comment">// 安全的 any（推荐）</span>
+<span class="keyword">let</span> nothing: <span class="keyword">never</span>               <span class="comment">// 永远不会出现</span>
+<span class="keyword">function</span> <span class="function">log</span>(): <span class="type">void</span> {}          <span class="comment">// 无返回值</span></code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📋 数组和元组</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 数组</span>
+<span class="keyword">let</span> numbers: <span class="type">number</span>[] = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]
+<span class="keyword">let</span> strings: <span class="type">Array</span>&lt;<span class="type">string</span>&gt; = [<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>]
+
+<span class="comment">// 元组</span>
+<span class="keyword">let</span> point: [<span class="type">number</span>, <span class="type">number</span>] = [<span class="number">10</span>, <span class="number">20</span>]
+<span class="keyword">let</span> record: [<span class="type">string</span>, <span class="type">number</span>] = [<span class="string">'Alice'</span>, <span class="number">30</span>]</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 接口与类型 -->
+    <section id="interfaces" class="section">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <div>
+          <h2 class="section-title">接口与类型</h2>
+          <p class="section-desc">定义对象结构的两种方式</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📝 接口（Interface）</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">interface</span> <span class="type">User</span> {
+  <span class="property">id</span>: <span class="type">number</span>
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">email</span>?: <span class="type">string</span>  <span class="comment">// 可选属性</span>
+}
+
+<span class="comment">// 继承</span>
+<span class="keyword">interface</span> <span class="type">Admin</span> <span class="keyword">extends</span> <span class="type">User</span> {
+  <span class="property">role</span>: <span class="type">string</span>
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📝 类型别名（Type）</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">type</span> <span class="type">ID</span> = <span class="type">string</span> | <span class="type">number</span>
+<span class="keyword">type</span> <span class="type">Point</span> = [<span class="type">number</span>, <span class="type">number</span>]
+<span class="keyword">type</span> <span class="type">Status</span> = <span class="string">'active'</span> | <span class="string">'inactive'</span> | <span class="string">'deleted'</span>
+<span class="keyword">type</span> <span class="type">Callback</span> = () =&gt; <span class="type">void</span></code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📊 选择建议</h3>
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>场景</th>
+              <th>推荐</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>对象结构</td>
+              <td><code class="inline-code">interface</code></td>
+            </tr>
+            <tr>
+              <td>联合类型</td>
+              <td><code class="inline-code">type</code></td>
+            </tr>
+            <tr>
+              <td>元组</td>
+              <td><code class="inline-code">type</code></td>
+            </tr>
+            <tr>
+              <td>需要声明合并</td>
+              <td><code class="inline-code">interface</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 函数 -->
+    <section id="functions" class="section">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <div>
+          <h2 class="section-title">函数</h2>
+          <p class="section-desc">函数类型、参数和返回值</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>⚡ 基本函数</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 函数声明</span>
+<span class="keyword">function</span> <span class="function">add</span>(<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>): <span class="type">number</span> {
+  <span class="keyword">return</span> a + b
+}
+
+<span class="comment">// 箭头函数</span>
+<span class="keyword">const</span> multiply = (<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>): <span class="type">number</span> =&gt; a * b</code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📝 可选参数和默认值</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">function</span> <span class="function">greet</span>(<span class="property">name</span>: <span class="type">string</span>, <span class="property">greeting</span>: <span class="type">string</span> = <span class="string">'Hello'</span>): <span class="type">string</span> {
+  <span class="keyword">return</span> <span class="string">`${</span>greeting<span class="string">}, ${</span>name<span class="string">}`</span>
+}
+
+<span class="function">greet</span>(<span class="string">'Alice'</span>)           <span class="comment">// 'Hello, Alice'</span>
+<span class="function">greet</span>(<span class="string">'Alice'</span>, <span class="string">'Hi'</span>)     <span class="comment">// 'Hi, Alice'</span></code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📋 剩余参数</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">function</span> <span class="function">sum</span>(...<span class="property">numbers</span>: <span class="type">number</span>[]): <span class="type">number</span> {
+  <span class="keyword">return</span> numbers.<span class="function">reduce</span>((<span class="property">a</span>, <span class="property">b</span>) =&gt; a + b, <span class="number">0</span>)
+}
+
+<span class="function">sum</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)        <span class="comment">// 6</span>
+<span class="function">sum</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="type">3</span>, <span class="number">4</span>, <span class="number">5</span>)  <span class="comment">// 15</span></code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📝 函数类型</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">type</span> <span class="type">MathFn</span> = (<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>) =&gt; <span class="type">number</span>
+
+<span class="keyword">const</span> add: <span class="type">MathFn</span> = (<span class="property">a</span>, <span class="property">b</span>) =&gt; a + b
+<span class="keyword">const</span> subtract: <span class="type">MathFn</span> = (<span class="property">a</span>, <span class="property">b</span>) =&gt; a - b</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 类 -->
+    <section id="classes" class="section">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <div>
+          <h2 class="section-title">类</h2>
+          <p class="section-desc">面向对象编程</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🏗️ 基本类</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">class</span> <span class="type">User</span> {
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">age</span>: <span class="type">number</span>
+
+  <span class="function">constructor</span>(<span class="property">name</span>: <span class="type">string</span>, <span class="property">age</span>: <span class="type">number</span>) {
+    <span class="keyword">this</span>.name = name
+    <span class="keyword">this</span>.age = age
+  }
+
+  <span class="function">greet</span>(): <span class="type">string</span> {
+    <span class="keyword">return</span> <span class="string">`Hello, ${</span><span class="keyword">this</span>.name<span class="string">}`</span>
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🔒 访问修饰符</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">class</span> <span class="type">User</span> {
+  <span class="keyword">public</span> <span class="property">name</span>: <span class="type">string</span>      <span class="comment">// 公开（默认）</span>
+  <span class="keyword">private</span> <span class="property">age</span>: <span class="type">number</span>      <span class="comment">// 私有</span>
+  <span class="keyword">protected</span> <span class="property">email</span>: <span class="type">string</span>  <span class="comment">// 受保护</span>
+  <span class="keyword">readonly</span> <span class="property">id</span>: <span class="type">number</span>      <span class="comment">// 只读</span>
+
+  <span class="function">constructor</span>(<span class="property">name</span>: <span class="type">string</span>, <span class="property">age</span>: <span class="type">number</span>, <span class="property">email</span>: <span class="type">string</span>, <span class="property">id</span>: <span class="type">number</span>) {
+    <span class="keyword">this</span>.name = name
+    <span class="keyword">this</span>.age = age
+    <span class="keyword">this</span>.email = email
+    <span class="keyword">this</span>.id = id
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🏗️ 参数属性（简写）</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 完整写法</span>
+<span class="keyword">class</span> <span class="type">User</span> {
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">age</span>: <span class="type">number</span>
+  <span class="function">constructor</span>(<span class="property">name</span>: <span class="type">string</span>, <span class="property">age</span>: <span class="type">number</span>) {
+    <span class="keyword">this</span>.name = name
+    <span class="keyword">this</span>.age = age
+  }
+}
+
+<span class="comment">// 参数属性简写</span>
+<span class="keyword">class</span> <span class="type">User</span> {
+  <span class="function">constructor</span>(
+    <span class="keyword">public</span> <span class="property">name</span>: <span class="type">string</span>,
+    <span class="keyword">public</span> <span class="property">age</span>: <span class="type">number</span>
+  ) {}
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🔄 继承</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">class</span> <span class="type">Animal</span> {
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="function">constructor</span>(<span class="property">name</span>: <span class="type">string</span>) { <span class="keyword">this</span>.name = name }
+}
+
+<span class="keyword">class</span> <span class="type">Dog</span> <span class="keyword">extends</span> <span class="type">Animal</span> {
+  <span class="property">breed</span>: <span class="type">string</span>
+  <span class="function">constructor</span>(<span class="property">name</span>: <span class="type">string</span>, <span class="property">breed</span>: <span class="type">string</span>) {
+    <span class="keyword">super</span>(name)
+    <span class="keyword">this</span>.breed = breed
+  }
+  <span class="function">bark</span>() { console.<span class="function">log</span>(<span class="string">'Woof!'</span>) }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🔮 抽象类</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">abstract class</span> <span class="type">Shape</span> {
+  <span class="keyword">abstract</span> <span class="function">area</span>(): <span class="type">number</span>
+  <span class="function">describe</span>(): <span class="type">string</span> {
+    <span class="keyword">return</span> <span class="string">`面积: ${</span><span class="keyword">this</span>.<span class="function">area</span>()<span class="string">}`</span>
+  }
+}
+
+<span class="keyword">class</span> <span class="type">Circle</span> <span class="keyword">extends</span> <span class="type">Shape</span> {
+  <span class="function">constructor</span>(<span class="keyword">private</span> <span class="property">radius</span>: <span class="type">number</span>) { <span class="keyword">super</span>() }
+  <span class="function">area</span>(): <span class="type">number</span> { <span class="keyword">return</span> Math.PI * <span class="keyword">this</span>.radius ** <span class="number">2</span> }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 枚举 -->
+    <section id="enums" class="section">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <div>
+          <h2 class="section-title">枚举</h2>
+          <p class="section-desc">命名常量</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📋 枚举类型</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 数字枚举</span>
+<span class="keyword">enum</span> <span class="type">Direction</span> {
+  <span class="property">Up</span>,      <span class="comment">// 0</span>
+  <span class="property">Down</span>,    <span class="comment">// 1</span>
+  <span class="property">Left</span>,    <span class="comment">// 2</span>
+  <span class="property">Right</span>    <span class="comment">// 3</span>
+}
+
+<span class="comment">// 字符串枚举</span>
+<span class="keyword">enum</span> <span class="type">Status</span> {
+  <span class="property">Active</span> = <span class="string">'ACTIVE'</span>,
+  <span class="property">Inactive</span> = <span class="string">'INACTIVE'</span>
+}
+
+<span class="comment">// const 枚举（编译时内联）</span>
+<span class="keyword">const enum</span> <span class="type">Color</span> {
+  <span class="property">Red</span>,
+  <span class="property">Green</span>,
+  <span class="property">Blue</span>
+}
+
+<span class="keyword">const</span> color = <span class="type">Color</span>.Red  <span class="comment">// 编译后：const color = 0</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 泛型 -->
+    <section id="generics" class="section">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <div>
+          <h2 class="section-title">泛型</h2>
+          <p class="section-desc">类型安全的复用</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>⚡ 泛型函数</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">function</span> <span class="function">identity</span>&lt;<span class="type">T</span>&gt;(<span class="property">value</span>: <span class="type">T</span>): <span class="type">T</span> {
+  <span class="keyword">return</span> value
+}
+
+<span class="function">identity</span>(<span class="string">'hello'</span>)  <span class="comment">// string</span>
+<span class="function">identity</span>(<span class="number">42</span>)       <span class="comment">// number</span></code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📝 泛型约束</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">function</span> <span class="function">getProperty</span>&lt;<span class="type">T</span>, <span class="type">K</span> <span class="keyword">extends</span> <span class="keyword">keyof</span> <span class="type">T</span>&gt;(<span class="property">obj</span>: <span class="type">T</span>, <span class="property">key</span>: <span class="type">K</span>): <span class="type">T</span>[<span class="type">K</span>] {
+  <span class="keyword">return</span> obj[key]
+}
+
+<span class="keyword">const</span> user = { <span class="property">name</span>: <span class="string">'Alice'</span>, <span class="property">age</span>: <span class="number">30</span> }
+<span class="function">getProperty</span>(user, <span class="string">'name'</span>)  <span class="comment">// string</span></code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🏗️ 泛型类</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">class</span> <span class="type">Container</span>&lt;<span class="type">T</span>&gt; {
+  <span class="keyword">private</span> <span class="property">items</span>: <span class="type">T</span>[] = []
+  <span class="function">add</span>(<span class="property">item</span>: <span class="type">T</span>) { <span class="keyword">this</span>.items.<span class="function">push</span>(item) }
+  <span class="function">get</span>(<span class="property">index</span>: <span class="type">number</span>): <span class="type">T</span> { <span class="keyword">return</span> <span class="keyword">this</span>.items[index] }
+}
+
+<span class="keyword">const</span> nums = <span class="keyword">new</span> <span class="type">Container</span>&lt;<span class="type">number</span>&gt;()
+nums.<span class="function">add</span>(<span class="number">1</span>)
+nums.<span class="function">add</span>(<span class="number">2</span>)</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 类型守卫 -->
+    <section id="guards" class="section">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <div>
+          <h2 class="section-title">类型守卫</h2>
+          <p class="section-desc">运行时类型检查</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🔍 typeof 守卫</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">function</span> <span class="function">format</span>(<span class="property">value</span>: <span class="type">string</span> | <span class="type">number</span>): <span class="type">string</span> {
+  <span class="keyword">if</span> (<span class="keyword">typeof</span> value === <span class="string">'string'</span>) {
+    <span class="keyword">return</span> value.<span class="function">toUpperCase</span>()  <span class="comment">// string</span>
+  }
+  <span class="keyword">return</span> value.<span class="function">toFixed</span>(<span class="number">2</span>)       <span class="comment">// number</span>
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🔍 instanceof 守卫</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">class</span> <span class="type">Bird</span> { <span class="function">fly</span>() {} }
+<span class="keyword">class</span> <span class="type">Fish</span> { <span class="function">swim</span>() {} }
+
+<span class="keyword">function</span> <span class="function">move</span>(<span class="property">animal</span>: <span class="type">Bird</span> | <span class="type">Fish</span>) {
+  <span class="keyword">if</span> (animal <span class="keyword">instanceof</span> <span class="type">Bird</span>) {
+    animal.<span class="function">fly</span>()   <span class="comment">// Bird</span>
+  } <span class="keyword">else</span> {
+    animal.<span class="function">swim</span>()  <span class="comment">// Fish</span>
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🔍 自定义类型守卫</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">function</span> <span class="function">isString</span>(<span class="property">value</span>: <span class="type">unknown</span>): <span class="property">value</span> <span class="keyword">is</span> <span class="type">string</span> {
+  <span class="keyword">return</span> <span class="keyword">typeof</span> value === <span class="string">'string'</span>
+}
+
+<span class="keyword">function</span> <span class="function">process</span>(<span class="property">value</span>: <span class="type">unknown</span>) {
+  <span class="keyword">if</span> (<span class="function">isString</span>(value)) {
+    console.<span class="function">log</span>(value.<span class="function">toUpperCase</span>())  <span class="comment">// string</span>
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 映射类型 -->
+    <section id="mapped" class="section">
+      <div class="section-header">
+        <div class="section-num">8</div>
+        <div>
+          <h2 class="section-title">映射类型</h2>
+          <p class="section-desc">变换对象类型</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📋 常用映射类型</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">interface</span> <span class="type">User</span> {
+  <span class="property">id</span>: <span class="type">number</span>
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">email</span>: <span class="type">string</span>
+}
+
+<span class="comment">// Partial: 所有属性可选</span>
+<span class="keyword">type</span> <span class="type">PartialUser</span> = <span class="type">Partial</span>&lt;<span class="type">User</span>&gt;
+<span class="comment">// { id?: number; name?: string; email?: string }</span>
+
+<span class="comment">// Readonly: 所有属性只读</span>
+<span class="keyword">type</span> <span class="type">ReadonlyUser</span> = <span class="type">Readonly</span>&lt;<span class="type">User</span>&gt;
+
+<span class="comment">// Pick: 选取指定键</span>
+<span class="keyword">type</span> <span class="type">UserName</span> = <span class="type">Pick</span>&lt;<span class="type">User</span>, <span class="string">'name'</span> | <span class="string">'email'</span>&gt;
+<span class="comment">// { name: string; email: string }</span>
+
+<span class="comment">// Omit: 排除指定键</span>
+<span class="keyword">type</span> <span class="type">UserWithoutId</span> = <span class="type">Omit</span>&lt;<span class="type">User</span>, <span class="string">'id'</span>&gt;
+<span class="comment">// { name: string; email: string }</span>
+
+<span class="comment">// Record: 构造键值映射</span>
+<span class="keyword">type</span> <span class="type">CatMap</span> = <span class="type">Record</span>&lt;<span class="string">'miffy'</span> | <span class="string">'boris'</span>, { <span class="property">age</span>: <span class="type">number</span> }&gt;
+<span class="comment">// { miffy: { age: number }; boris: { age: number } }</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- async/await -->
+    <section id="async" class="section">
+      <div class="section-header">
+        <div class="section-num">9</div>
+        <div>
+          <h2 class="section-title">async/await</h2>
+          <p class="section-desc">异步编程</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>⚡ 异步函数</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">async function</span> <span class="function">fetchUser</span>(<span class="property">id</span>: <span class="type">number</span>): <span class="type">Promise</span>&lt;<span class="type">User</span>&gt; {
+  <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">`/api/users/</span>${id}<span class="string">`</span>)
+  <span class="keyword">return</span> response.<span class="function">json</span>()
+}
+
+<span class="comment">// 错误处理</span>
+<span class="keyword">async function</span> <span class="function">safeFetch</span>(<span class="property">url</span>: <span class="type">string</span>): <span class="type">Promise</span>&lt;<span class="type">Response</span> | <span class="keyword">null</span>&gt; {
+  <span class="keyword">try</span> {
+    <span class="keyword">return await</span> <span class="function">fetch</span>(url)
+  } <span class="keyword">catch</span> (error) {
+    console.<span class="function">error</span>(<span class="string">'请求失败:'</span>, error)
+    <span class="keyword">return</span> <span class="keyword">null</span>
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 模块 -->
+    <section id="modules" class="section">
+      <div class="section-header">
+        <div class="section-num">10</div>
+        <div>
+          <h2 class="section-title">模块</h2>
+          <p class="section-desc">代码组织</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📦 导入导出</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 导出</span>
+<span class="keyword">export function</span> <span class="function">add</span>(<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>): <span class="type">number</span> {
+  <span class="keyword">return</span> a + b
+}
+
+<span class="keyword">export interface</span> <span class="type">User</span> {
+  <span class="property">id</span>: <span class="type">number</span>
+  <span class="property">name</span>: <span class="type">string</span>
+}
+
+<span class="comment">// 导入</span>
+<span class="keyword">import</span> { add, User } <span class="keyword">from</span> <span class="string">'./math'</span>
+
+<span class="comment">// 默认导出</span>
+<span class="keyword">export default</span> <span class="keyword">class</span> <span class="type">Logger</span> {
+  <span class="function">log</span>(<span class="property">msg</span>: <span class="type">string</span>) { console.<span class="function">log</span>(msg) }
+}
+
+<span class="comment">// 导入默认导出</span>
+<span class="keyword">import</span> Logger <span class="keyword">from</span> <span class="string">'./logger'</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 常用模式 -->
+    <section id="patterns" class="section">
+      <div class="section-header">
+        <div class="section-num">11</div>
+        <div>
+          <h2 class="section-title">常用模式</h2>
+          <p class="section-desc">实际开发中的最佳实践</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🎯 类型安全的事件系统</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">type</span> <span class="type">EventMap</span> = {
+  <span class="property">click</span>: { <span class="property">x</span>: <span class="type">number</span>; <span class="property">y</span>: <span class="type">number</span> }
+  <span class="property">keydown</span>: { <span class="property">key</span>: <span class="type">string</span> }
+}
+
+<span class="keyword">function</span> <span class="function">on</span>&lt;<span class="type">K</span> <span class="keyword">extends</span> <span class="keyword">keyof</span> <span class="type">EventMap</span>&gt;(
+  <span class="property">event</span>: <span class="type">K</span>,
+  <span class="property">handler</span>: (<span class="property">data</span>: <span class="type">EventMap</span>[<span class="type">K</span>]) =&gt; <span class="type">void</span>
+) {
+  <span class="comment">// 类型安全</span>
+}
+
+<span class="function">on</span>(<span class="string">'click'</span>, (<span class="property">data</span>) =&gt; {
+  console.<span class="function">log</span>(data.x, data.y)  <span class="comment">// 类型安全</span>
+})</code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🎯 类型安全的 API</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">interface</span> <span class="type">ApiEndpoints</span> {
+  <span class="string">'/users'</span>: { <span class="property">id</span>: <span class="type">number</span>; <span class="property">name</span>: <span class="type">string</span> }
+  <span class="string">'/posts'</span>: { <span class="property">id</span>: <span class="type">number</span>; <span class="property">title</span>: <span class="type">string</span> }
+}
+
+<span class="keyword">async function</span> <span class="function">fetchApi</span>&lt;<span class="type">T</span> <span class="keyword">extends</span> <span class="keyword">keyof</span> <span class="type">ApiEndpoints</span>&gt;(
+  <span class="property">endpoint</span>: <span class="type">T</span>
+): <span class="type">Promise</span>&lt;<span class="type">ApiEndpoints</span>[<span class="type">T</span>]&gt; {
+  <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="function">fetch</span>(endpoint)
+  <span class="keyword">return</span> response.<span class="function">json</span>()
+}
+
+<span class="keyword">const</span> user = <span class="keyword">await</span> <span class="function">fetchApi</span>(<span class="string">'/users'</span>)  <span class="comment">// { id: number; name: string }</span></code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🎯 Result 模式（替代 try/catch）</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">type</span> <span class="type">Result</span>&lt;<span class="type">T</span>, <span class="type">E</span> = <span class="type">Error</span>&gt; =
+  | { <span class="property">ok</span>: <span class="keyword">true</span>; <span class="property">value</span>: <span class="type">T</span> }
+  | { <span class="property">ok</span>: <span class="keyword">false</span>; <span class="property">error</span>: <span class="type">E</span> }
+
+<span class="keyword">function</span> <span class="function">divide</span>(<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>): <span class="type">Result</span>&lt;<span class="type">number</span>, <span class="type">string</span>&gt; {
+  <span class="keyword">if</span> (b === <span class="number">0</span>) <span class="keyword">return</span> { <span class="property">ok</span>: <span class="keyword">false</span>, <span class="property">error</span>: <span class="string">'除数不能为零'</span> }
+  <span class="keyword">return</span> { <span class="property">ok</span>: <span class="keyword">true</span>, <span class="property">value</span>: a / b }
+}
+
+<span class="keyword">const</span> result = <span class="function">divide</span>(<span class="number">10</span>, <span class="number">2</span>)
+<span class="keyword">if</span> (result.ok) {
+  console.<span class="function">log</span>(result.value)  <span class="comment">// number</span>
+} <span class="keyword">else</span> {
+  console.<span class="function">log</span>(result.error)  <span class="comment">// string</span>
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 速查表 -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-num">⭐</div>
+        <div>
+          <h2 class="section-title">速查表</h2>
+          <p class="section-desc">常用语法速查</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>特性</th>
+              <th>语法</th>
+              <th>示例</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>类型注解</td>
+              <td><code class="inline-code">x: Type</code></td>
+              <td><code class="inline-code">let name: string</code></td>
+            </tr>
+            <tr>
+              <td>接口</td>
+              <td><code class="inline-code">interface I {}</code></td>
+              <td><code class="inline-code">interface User { name: string }</code></td>
+            </tr>
+            <tr>
+              <td>类型别名</td>
+              <td><code class="inline-code">type T = Type</code></td>
+              <td><code class="inline-code">type ID = string | number</code></td>
+            </tr>
+            <tr>
+              <td>泛型</td>
+              <td><code class="inline-code">&lt;T&gt;</code></td>
+              <td><code class="inline-code">function id&lt;T&gt;(x: T): T</code></td>
+            </tr>
+            <tr>
+              <td>条件类型</td>
+              <td><code class="inline-code">T extends U ? X : Y</code></td>
+              <td><code class="inline-code">type A = T extends string ? true : false</code></td>
+            </tr>
+            <tr>
+              <td>映射类型</td>
+              <td><code class="inline-code">[K in keyof T]</code></td>
+              <td><code class="inline-code">{ [K in keyof T]?: T[K] }</code></td>
+            </tr>
+            <tr>
+              <td>typeof</td>
+              <td><code class="inline-code">typeof x</code></td>
+              <td><code class="inline-code">const type = typeof value</code></td>
+            </tr>
+            <tr>
+              <td>keyof</td>
+              <td><code class="inline-code">keyof T</code></td>
+              <td><code class="inline-code">type Keys = keyof User</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>TypeScript 日常开发快速入门</p>
+    <p style="margin-top: 0.5rem;">聚焦日常开发最常用的特性</p>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.card').forEach(el => {
+      el.classList.add('animate-on-scroll');
+      observer.observe(el);
+    });
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(link.getAttribute('href').substring(1));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>

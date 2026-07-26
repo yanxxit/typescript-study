@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeScript 错误处理完全指南</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #3178c6;
+      --primary-light: #519aba;
+      --primary-dark: #235a97;
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-code: #1c2128;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --success: #3fb950;
+      --error: #f85149;
+      --warning: #d29922;
+      --red: #ef4444;
+      --rose: #f43f5e;
+      --pink: #ec4899;
+      --gradient-1: linear-gradient(135deg, #ef4444, #f43f5e);
+      --gradient-2: linear-gradient(135deg, #f43f5e, #ec4899);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 20%, rgba(239, 68, 68, 0.15), transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(244, 63, 94, 0.1), transparent 50%),
+                  var(--bg);
+      padding: 2rem;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(239, 68, 68, 0.3) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid var(--red);
+      border-radius: 50px;
+      font-size: 0.9rem;
+      color: var(--red);
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--red));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s ease 0.1s both;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 3rem;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .stat-item { text-align: center; }
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 0.9rem; color: var(--text-muted); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-inner::-webkit-scrollbar { display: none; }
+
+    .nav-link {
+      white-space: nowrap;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--red);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    .section { margin-bottom: 6rem; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .section-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+
+    .section-icon.basics { background: var(--gradient-1); }
+    .section-icon.advanced { background: var(--gradient-2); }
+    .section-icon.practice { background: linear-gradient(135deg, #10b981, #06b6d4); }
+
+    .section-title { font-size: 2rem; font-weight: 700; }
+    .section-subtitle { color: var(--text-muted); font-size: 1rem; }
+
+    .type-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .type-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--gradient-1);
+      border-radius: 4px 0 0 4px;
+    }
+
+    .type-card:hover {
+      border-color: var(--red);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2);
+    }
+
+    .type-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .type-name {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--red);
+    }
+
+    .type-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-core { background: rgba(239, 68, 68, 0.2); color: var(--red); border: 1px solid var(--red); }
+    .badge-common { background: rgba(244, 63, 94, 0.2); color: var(--rose); border: 1px solid var(--rose); }
+    .badge-advanced { background: rgba(236, 72, 153, 0.2); color: var(--pink); border: 1px solid var(--pink); }
+
+    .type-translation { color: var(--text-muted); font-size: 0.95rem; }
+    .type-description { margin-bottom: 1.5rem; color: var(--text); line-height: 1.8; }
+
+    .code-wrapper { position: relative; margin: 1.5rem 0; }
+
+    .code-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 0.4rem 1rem;
+      background: var(--red);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 0 0 8px 0;
+      z-index: 1;
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      padding-top: 2.5rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    code { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+    .inline-code {
+      background: rgba(239, 68, 68, 0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--red);
+    }
+
+    .keyword { color: #ff7b72; }
+    .type { color: #79c0ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .function { color: #d2a8ff; }
+    .property { color: #e6edf3; }
+
+    .mermaid-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 2rem 0;
+      text-align: center;
+    }
+
+    .mermaid-container h4 {
+      margin-bottom: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .visual-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      padding: 2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+
+    .diagram-box {
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+      min-width: 150px;
+    }
+
+    .diagram-box.input { background: rgba(239, 68, 68, 0.2); border: 2px solid var(--red); }
+    .diagram-box.output { background: rgba(16, 185, 129, 0.2); border: 2px solid var(--success); }
+    .diagram-box.comparison { background: rgba(168, 85, 247, 0.2); border: 2px solid #a855f7; }
+
+    .diagram-arrow { font-size: 1.5rem; color: var(--text-muted); font-weight: 600; }
+    .diagram-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .diagram-value { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.9rem; }
+
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .api-table th {
+      background: var(--red);
+      padding: 1rem 1.5rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .api-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .api-table tr:last-child td { border-bottom: none; }
+    .api-table tr:hover td { background: rgba(239, 68, 68, 0.1); }
+
+    .footer {
+      text-align: center;
+      padding: 4rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .hero-stats { gap: 2rem; }
+      .stat-number { font-size: 2rem; }
+      .section-header { flex-direction: column; text-align: center; }
+      .visual-diagram { flex-direction: column; }
+      .diagram-arrow { transform: rotate(90deg); }
+    }
+
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">TypeScript 错误处理</span>
+      <h1>错误处理完全指南</h1>
+      <p>掌握 try/catch、自定义错误、类型守卫、Result 模式等技术，让你的 TypeScript 代码更加健壮可靠。</p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">7</div>
+          <div class="stat-label">核心概念</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">3</div>
+          <div class="stat-label">错误模式</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">3</div>
+          <div class="stat-label">实战案例</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#types" class="nav-link">错误类型</a>
+      <a href="#trycatch" class="nav-link">try/catch</a>
+      <a href="#custom" class="nav-link">自定义错误</a>
+      <a href="#guards" class="nav-link">类型守卫</a>
+      <a href="#promise" class="nav-link">Promise 错误</a>
+      <a href="#async" class="nav-link">async/await</a>
+      <a href="#result" class="nav-link">Result 模式</a>
+      <a href="#boundary" class="nav-link">错误边界</a>
+      <a href="#cases" class="nav-link">实战案例</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section id="types" class="section">
+      <div class="section-header">
+        <div class="section-icon basics">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">错误类型概述</h2>
+          <p class="section-subtitle">JavaScript 内置错误类型</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Error Types</span>
+        </div>
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>错误类型</th>
+              <th>说明</th>
+              <th>示例</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline-code">Error</code></td>
+              <td>基础错误类型</td>
+              <td>通用错误</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">TypeError</code></td>
+              <td>类型错误</td>
+              <td>类型不匹配</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">RangeError</code></td>
+              <td>范围错误</td>
+              <td>数值超出范围</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">ReferenceError</code></td>
+              <td>引用错误</td>
+              <td>变量未定义</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">SyntaxError</code></td>
+              <td>语法错误</td>
+              <td>代码语法错误</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="type-description">
+          <p><strong>推荐</strong>：始终抛出 <code class="inline-code">Error</code> 实例，不要抛出其他值（如字符串、数字）。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="trycatch" class="section">
+      <div class="section-header">
+        <div class="section-icon basics">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">try/catch 基础</h2>
+          <p class="section-subtitle">同步错误处理</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">try / catch / finally</span>
+          <span class="type-badge badge-core">核心</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">基本语法</span>
+          <pre><code><span class="keyword">try</span> {
+  <span class="comment">// 可能出错的代码</span>
+  <span class="keyword">const</span> result = <span class="type">JSON</span>.<span class="function">parse</span>(<span class="string">'{"name": "Alice"}'</span>)
+  console.<span class="function">log</span>(result.name)
+} <span class="keyword">catch</span> (error) {
+  <span class="comment">// TypeScript 5.0+：error 默认为 unknown</span>
+  <span class="keyword">if</span> (error <span class="keyword">instanceof</span> <span class="type">Error</span>) {
+    console.<span class="function">error</span>(<span class="string">'解析失败:'</span>, error.message)
+  }
+} <span class="keyword">finally</span> {
+  <span class="comment">// 无论成功失败都执行</span>
+  console.<span class="function">log</span>(<span class="string">'清理资源'</span>)
+}</code></pre>
+        </div>
+        <div class="type-description">
+          <p><strong>TypeScript 5.0+</strong>：catch 变量默认为 <code class="inline-code">unknown</code>，需要类型检查才能安全使用。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="custom" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <path d="M14 2v6h6"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">自定义错误类</h2>
+          <p class="section-subtitle">携带更多信息的错误</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">class AppError extends Error</span>
+          <span class="type-badge badge-core">核心</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">自定义错误类</span>
+          <pre><code><span class="keyword">class</span> <span class="type">AppError</span> <span class="keyword">extends</span> <span class="type">Error</span> {
+  <span class="function">constructor</span>(
+    <span class="property">message</span>: <span class="type">string</span>,
+    <span class="keyword">public</span> <span class="property">code</span>: <span class="type">string</span>,
+    <span class="keyword">public</span> <span class="property">statusCode</span>: <span class="type">number</span> = <span class="number">500</span>
+  ) {
+    <span class="keyword">super</span>(message)
+    <span class="keyword">this</span>.name = <span class="string">'AppError'</span>
+  }
+}
+
+<span class="comment">// 错误继承体系</span>
+<span class="keyword">class</span> <span class="type">ValidationError</span> <span class="keyword">extends</span> <span class="type">AppError</span> {
+  <span class="function">constructor</span>(
+    <span class="property">message</span>: <span class="type">string</span>,
+    <span class="keyword">public</span> <span class="property">field</span>: <span class="type">string</span>
+  ) {
+    <span class="keyword">super</span>(message, <span class="string">'VALIDATION_ERROR'</span>)
+    <span class="keyword">this</span>.name = <span class="string">'ValidationError'</span>
+  }
+}
+
+<span class="keyword">class</span> <span class="type">AuthError</span> <span class="keyword">extends</span> <span class="type">AppError</span> {
+  <span class="function">constructor</span>(<span class="property">message</span>: <span class="type">string</span>) {
+    <span class="keyword">super</span>(message, <span class="string">'AUTH_ERROR'</span>)
+    <span class="keyword">this</span>.name = <span class="string">'AuthError'</span>
+  }
+}
+
+<span class="comment">// 使用</span>
+<span class="keyword">throw new</span> <span class="type">ValidationError</span>(<span class="string">'邮箱格式不正确'</span>, <span class="string">'email'</span>)</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="guards" class="section">
+      <div class="section-header">
+        <div class="section-icon practice">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M9 12l2 2 4-4"/>
+            <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">错误类型守卫</h2>
+          <p class="section-subtitle">安全地处理 unknown 类型</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">is 关键字类型守卫</span>
+          <span class="type-badge badge-core">核心</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">类型守卫</span>
+          <pre><code><span class="comment">// 自定义类型守卫</span>
+<span class="keyword">function</span> <span class="function">isAppError</span>(<span class="property">error</span>: <span class="type">unknown</span>): <span class="property">error</span> <span class="keyword">is</span> <span class="type">AppError</span> {
+  <span class="keyword">return</span> error <span class="keyword">instanceof</span> <span class="type">AppError</span>
+}
+
+<span class="keyword">function</span> <span class="function">isValidationError</span>(<span class="property">error</span>: <span class="type">unknown</span>): <span class="property">error</span> <span class="keyword">is</span> <span class="type">ValidationError</span> {
+  <span class="keyword">return</span> error <span class="keyword">instanceof</span> <span class="type">ValidationError</span>
+}
+
+<span class="comment">// 使用类型守卫处理错误</span>
+<span class="keyword">async function</span> <span class="function">fetchData</span>(<span class="property">url</span>: <span class="type">string</span>) {
+  <span class="keyword">try</span> {
+    <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="function">fetch</span>(url)
+    <span class="keyword">if</span> (!response.ok) {
+      <span class="keyword">throw new</span> <span class="type">AppError</span>(<span class="string">`HTTP </span>${response.status}<span class="string">`</span>, <span class="string">'HTTP_ERROR'</span>)
+    }
+    <span class="keyword">return await</span> response.<span class="function">json</span>()
+  } <span class="keyword">catch</span> (error) {
+    <span class="keyword">if</span> (<span class="function">isValidationError</span>(error)) {
+      console.<span class="function">error</span>(<span class="string">`验证失败: </span>${error.field}<span class="string">`</span>)
+    } <span class="keyword">else if</span> (<span class="function">isAppError</span>(error)) {
+      console.<span class="function">error</span>(<span class="string">`应用错误 [</span>${error.code}<span class="string">]: </span>${error.message}<span class="string">`</span>)
+    } <span class="keyword">else if</span> (error <span class="keyword">instanceof</span> <span class="type">Error</span>) {
+      console.<span class="function">error</span>(<span class="string">`未知错误: </span>${error.message}<span class="string">`</span>)
+    }
+    <span class="keyword">throw</span> error
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="promise" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">Promise 错误处理</h2>
+          <p class="section-subtitle">异步操作的错误</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Promise.all / allSettled</span>
+          <span class="type-badge badge-core">核心</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">Promise.all</span>
+          <pre><code><span class="comment">// 任何一个失败都会进入 catch</span>
+<span class="keyword">try</span> {
+  <span class="keyword">const</span> [user, posts] = <span class="keyword">await</span> <span class="type">Promise</span>.<span class="function">all</span>([
+    <span class="function">fetchUser</span>(<span class="number">1</span>),
+    <span class="function">fetchPosts</span>(<span class="number">1</span>)
+  ])
+} <span class="keyword">catch</span> (error) {
+  console.<span class="function">error</span>(<span class="string">'错误:'</span>, error)
+}</code></pre>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">Promise.allSettled</span>
+          <pre><code><span class="comment">// 等待全部完成，处理部分失败</span>
+<span class="keyword">const</span> results = <span class="keyword">await</span> <span class="type">Promise</span>.<span class="function">allSettled</span>([
+  <span class="function">fetchUser</span>(<span class="number">1</span>),
+  <span class="function">fetchUser</span>(<span class="number">2</span>),
+  <span class="function">fetchUser</span>(<span class="number">3</span>)
+])
+
+results.<span class="function">forEach</span>((<span class="property">result</span>, <span class="property">index</span>) =&gt; {
+  <span class="keyword">if</span> (result.status === <span class="string">'rejected'</span>) {
+    console.<span class="function">error</span>(<span class="string">`用户 </span>${index}<span class="string"> 失败:`</span>, result.reason)
+  }
+})</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="async" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            <path d="M21 3v5h-5"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">async/await 错误处理</h2>
+          <p class="section-subtitle">现代异步错误处理</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">try/catch + async/await</span>
+          <span class="type-badge badge-core">核心</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">基本用法</span>
+          <pre><code><span class="keyword">async function</span> <span class="function">fetchData</span>(): <span class="type">Promise</span>&lt;<span class="type">Data</span>&gt; {
+  <span class="keyword">try</span> {
+    <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">'/api/data'</span>)
+    <span class="keyword">if</span> (!response.ok) {
+      <span class="keyword">throw new</span> <span class="type">Error</span>(<span class="string">`HTTP </span>${response.status}<span class="string">`</span>)
+    }
+    <span class="keyword">return await</span> response.<span class="function">json</span>()
+  } <span class="keyword">catch</span> (error) {
+    console.<span class="function">error</span>(<span class="string">'Fetch failed:'</span>, error)
+    <span class="keyword">throw</span> error
+  }
+}</code></pre>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">错误处理工具函数</span>
+          <pre><code><span class="comment">// 方式一：返回 [data, error] 元组</span>
+<span class="keyword">async function</span> <span class="function">safeAsync</span>&lt;<span class="type">T</span>&gt;(
+  <span class="property">fn</span>: () =&gt; <span class="type">Promise</span>&lt;<span class="type">T</span>&gt;
+): <span class="type">Promise</span>&lt;[<span class="type">T</span>, <span class="keyword">null</span>] | [<span class="keyword">null</span>, <span class="type">Error</span>]&gt; {
+  <span class="keyword">try</span> {
+    <span class="keyword">const</span> result = <span class="keyword">await</span> <span class="function">fn</span>()
+    <span class="keyword">return</span> [result, <span class="keyword">null</span>]
+  } <span class="keyword">catch</span> (error) {
+    <span class="keyword">return</span> [<span class="keyword">null</span>, error <span class="keyword">as</span> <span class="type">Error</span>]
+  }
+}
+
+<span class="comment">// 使用</span>
+<span class="keyword">const</span> [user, error] = <span class="keyword">await</span> <span class="function">safeAsync</span>(() =&gt; <span class="function">fetchUser</span>(<span class="number">1</span>))
+<span class="keyword">if</span> (error) {
+  console.<span class="function">error</span>(<span class="string">'Error:'</span>, error.message)
+} <span class="keyword">else</span> {
+  console.<span class="function">log</span>(user.name)
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="result" class="section">
+      <div class="section-header">
+        <div class="section-icon practice">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M16 18l6-6-6-6"/>
+            <path d="M8 6l-6 6 6 6"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">Result 模式</h2>
+          <p class="section-subtitle">替代 try/catch 的方式</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Result&lt;T, E&gt;</span>
+          <span class="type-badge badge-advanced">进阶</span>
+          <span class="type-translation">类似 Rust 的 Result 类型</span>
+        </div>
+        <div class="mermaid-container">
+          <h4>Result 模式流程</h4>
+          <pre class="mermaid">
+flowchart LR
+    A["函数调用"] --> B{"操作成功?"}
+            B -->|Yes| C["Ok(value)"]
+            B -->|No| D["Err(error)"]
+            C --> E["使用 value"]
+            D --> F["处理 error"]
+          </pre>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">Result 实现</span>
+          <pre><code><span class="keyword">type</span> <span class="type">Result</span>&lt;<span class="type">T</span>, <span class="type">E</span> = <span class="type">Error</span>&gt; =
+  | { <span class="property">ok</span>: <span class="keyword">true</span>; <span class="property">value</span>: <span class="type">T</span> }
+  | { <span class="property">ok</span>: <span class="keyword">false</span>; <span class="property">error</span>: <span class="type">E</span> }
+
+<span class="keyword">function</span> <span class="function">Ok</span>&lt;<span class="type">T</span>&gt;(<span class="property">value</span>: <span class="type">T</span>): <span class="type">Result</span>&lt;<span class="type">T</span>, <span class="keyword">never</span>&gt; {
+  <span class="keyword">return</span> { <span class="property">ok</span>: <span class="keyword">true</span>, value }
+}
+
+<span class="keyword">function</span> <span class="function">Err</span>&lt;<span class="type">E</span>&gt;(<span class="property">error</span>: <span class="type">E</span>): <span class="type">Result</span>&lt;<span class="keyword">never</span>, <span class="type">E</span>&gt; {
+  <span class="keyword">return</span> { <span class="property">ok</span>: <span class="keyword">false</span>, error }
+}
+
+<span class="comment">// 使用</span>
+<span class="keyword">function</span> <span class="function">divide</span>(<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>): <span class="type">Result</span>&lt;<span class="type">number</span>, <span class="type">string</span>&gt; {
+  <span class="keyword">if</span> (b === <span class="number">0</span>) {
+    <span class="keyword">return</span> <span class="function">Err</span>(<span class="string">'除数不能为零'</span>)
+  }
+  <span class="keyword">return</span> <span class="function">Ok</span>(a / b)
+}
+
+<span class="keyword">const</span> result = <span class="function">divide</span>(<span class="number">10</span>, <span class="number">2</span>)
+<span class="keyword">if</span> (result.ok) {
+  console.<span class="function">log</span>(<span class="string">'结果:'</span>, result.value)  <span class="comment">// number</span>
+} <span class="keyword">else</span> {
+  console.<span class="function">error</span>(<span class="string">'错误:'</span>, result.error)  <span class="comment">// string</span>
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="boundary" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">错误边界</h2>
+          <p class="section-subtitle">React 错误处理</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">ErrorBoundary</span>
+          <span class="type-badge badge-advanced">进阶</span>
+        </div>
+        <div class="code-wrapper">
+          <span class="code-label">React 错误边界</span>
+          <pre><code><span class="keyword">import</span> React, { Component, ErrorInfo, ReactNode } <span class="keyword">from</span> <span class="string">'react'</span>
+
+<span class="keyword">interface</span> <span class="type">Props</span> {
+  <span class="property">children</span>: <span class="type">ReactNode</span>
+  <span class="property">fallback</span>?: <span class="type">ReactNode</span>
+}
+
+<span class="keyword">interface</span> <span class="type">State</span> {
+  <span class="property">hasError</span>: <span class="type">boolean</span>
+  <span class="property">error</span>?: <span class="type">Error</span>
+}
+
+<span class="keyword">class</span> <span class="type">ErrorBoundary</span> <span class="keyword">extends</span> <span class="type">Component</span>&lt;<span class="type">Props</span>, <span class="type">State</span>&gt; {
+  <span class="function">constructor</span>(<span class="property">props</span>: <span class="type">Props</span>) {
+    <span class="keyword">super</span>(props)
+    <span class="keyword">this</span>.state = { <span class="property">hasError</span>: <span class="keyword">false</span> }
+  }
+
+  <span class="keyword">static</span> <span class="function">getDerivedStateFromError</span>(<span class="property">error</span>: <span class="type">Error</span>): <span class="type">State</span> {
+    <span class="keyword">return</span> { <span class="property">hasError</span>: <span class="keyword">true</span>, error }
+  }
+
+  <span class="function">componentDidCatch</span>(<span class="property">error</span>: <span class="type">Error</span>, <span class="property">errorInfo</span>: <span class="type">ErrorInfo</span>) {
+    console.<span class="function">error</span>(<span class="string">'错误边界捕获:'</span>, error, errorInfo)
+  }
+
+  <span class="function">render</span>() {
+    <span class="keyword">if</span> (<span class="keyword">this</span>.state.hasError) {
+      <span class="keyword">return</span> <span class="keyword">this</span>.props.fallback || &lt;<span class="type">h1</span>&gt;出错了&lt;/<span class="type">h1</span>&gt;
+    }
+    <span class="keyword">return</span> <span class="keyword">this</span>.props.children
+  }
+}
+
+<span class="comment">// 使用</span>
+&lt;<span class="type">ErrorBoundary</span> <span class="property">fallback</span>={&lt;<span class="type">div</span>&gt;加载失败&lt;/<span class="type">div</span>&gt;}&gt;
+  &lt;<span class="type">App</span> /&gt;
+&lt;/<span class="type">ErrorBoundary</span>&gt;</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="cases" class="section">
+      <div class="section-header">
+        <div class="section-icon practice">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+            <path d="M13 2v7h7"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">实战案例</h2>
+          <p class="section-subtitle">真实场景中的应用</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 1：类型安全的 API 客户端</span>
+          <span class="type-badge badge-common">常用</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">interface</span> <span class="type">ApiResponse</span>&lt;<span class="type">T</span>&gt; {
+  <span class="property">success</span>: <span class="type">boolean</span>
+  <span class="property">data</span>?: <span class="type">T</span>
+  <span class="property">error</span>?: { <span class="property">status</span>: <span class="type">number</span>; <span class="property">message</span>: <span class="type">string</span> }
+}
+
+<span class="keyword">class</span> <span class="type">ApiClient</span> {
+  <span class="keyword">async</span> <span class="function">request</span>&lt;<span class="type">T</span>&gt;(
+    <span class="property">url</span>: <span class="type">string</span>,
+    <span class="property">options</span>?: <span class="type">RequestInit</span>
+  ): <span class="type">Promise</span>&lt;<span class="type">ApiResponse</span>&lt;<span class="type">T</span>&gt;&gt; {
+    <span class="keyword">try</span> {
+      <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="function">fetch</span>(url, options)
+
+      <span class="keyword">if</span> (!response.ok) {
+        <span class="keyword">return</span> {
+          <span class="property">success</span>: <span class="keyword">false</span>,
+          <span class="property">error</span>: { <span class="property">status</span>: response.status, <span class="property">message</span>: response.statusText }
+        }
+      }
+
+      <span class="keyword">const</span> data = <span class="keyword">await</span> response.<span class="function">json</span>()
+      <span class="keyword">return</span> { <span class="property">success</span>: <span class="keyword">true</span>, data }
+    } <span class="keyword">catch</span> (error) {
+      <span class="keyword">return</span> {
+        <span class="property">success</span>: <span class="keyword">false</span>,
+        <span class="property">error</span>: {
+          <span class="property">status</span>: <span class="number">0</span>,
+          <span class="property">message</span>: error <span class="keyword">instanceof</span> <span class="type">Error</span> ? error.message : <span class="string">'网络错误'</span>
+        }
+      }
+    }
+  }
+}
+
+<span class="comment">// 使用</span>
+<span class="keyword">const</span> result = <span class="keyword">await</span> <span class="keyword">new</span> <span class="type">ApiClient</span>().<span class="function">request</span>&lt;<span class="type">User</span>&gt;(<span class="string">'/api/user/1'</span>)
+<span class="keyword">if</span> (result.success) {
+  console.<span class="function">log</span>(result.data?.name)
+} <span class="keyword">else</span> {
+  console.<span class="function">error</span>(result.error?.message)
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 2：表单验证错误</span>
+          <span class="type-badge badge-common">常用</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">interface</span> <span class="type">ValidationError</span> {
+  <span class="property">field</span>: <span class="type">string</span>
+  <span class="property">message</span>: <span class="type">string</span>
+  <span class="property">code</span>: <span class="type">string</span>
+}
+
+<span class="keyword">class</span> <span class="type">FormValidator</span> {
+  <span class="keyword">private</span> <span class="property">errors</span>: <span class="type">ValidationError</span>[] = []
+
+  <span class="function">validate</span>(
+    <span class="property">data</span>: <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">any</span>&gt;,
+    <span class="property">rules</span>: <span class="type">Record</span>&lt;<span class="type">string</span>, (<span class="property">value</span>: <span class="type">any</span>) =&gt; <span class="type">boolean</span>&gt;
+  ) {
+    <span class="keyword">this</span>.errors = []
+
+    <span class="keyword">for</span> (<span class="keyword">const</span> [field, rule] <span class="keyword">of</span> Object.<span class="function">entries</span>(rules)) {
+      <span class="keyword">if</span> (!<span class="function">rule</span>(data[field])) {
+        <span class="keyword">this</span>.errors.<span class="function">push</span>({
+          field,
+          <span class="property">message</span>: <span class="string">`${field} 验证失败`</span>,
+          <span class="property">code</span>: <span class="string">'VALIDATION_ERROR'</span>
+        })
+      }
+    }
+
+    <span class="keyword">return</span> <span class="keyword">this</span>.errors.length === <span class="number">0</span>
+  }
+
+  <span class="function">getErrors</span>(): <span class="type">ValidationError</span>[] {
+    <span class="keyword">return</span> <span class="keyword">this</span>.errors
+  }
+}
+
+<span class="comment">// 使用</span>
+<span class="keyword">const</span> validator = <span class="keyword">new</span> <span class="type">FormValidator</span>()
+<span class="keyword">const</span> isValid = validator.<span class="function">validate</span>(
+  { <span class="property">name</span>: <span class="string">''</span>, <span class="property">email</span>: <span class="string">'invalid'</span> },
+  {
+    <span class="property">name</span>: (<span class="property">v</span>) =&gt; v.length &gt; <span class="number">0</span>,
+    <span class="property">email</span>: (<span class="property">v</span>) =&gt; v.<span class="function">includes</span>(<span class="string">'@'</span>)
+  }
+)</code></pre>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 3：错误日志系统</span>
+          <span class="type-badge badge-advanced">进阶</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">interface</span> <span class="type">LogEntry</span> {
+  <span class="property">timestamp</span>: <span class="type">Date</span>
+  <span class="property">level</span>: <span class="string">'info'</span> | <span class="string">'warn'</span> | <span class="string">'error'</span>
+  <span class="property">message</span>: <span class="type">string</span>
+  <span class="property">error</span>?: <span class="type">Error</span>
+  <span class="property">metadata</span>?: <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">any</span>&gt;
+}
+
+<span class="keyword">class</span> <span class="type">Logger</span> {
+  <span class="keyword">private</span> <span class="property">logs</span>: <span class="type">LogEntry</span>[] = []
+
+  <span class="function">error</span>(<span class="property">message</span>: <span class="type">string</span>, <span class="property">error</span>?: <span class="type">Error</span>, <span class="property">metadata</span>?: <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">any</span>&gt;) {
+    <span class="keyword">const</span> entry: <span class="type">LogEntry</span> = {
+      <span class="property">timestamp</span>: <span class="keyword">new</span> <span class="type">Date</span>(),
+      <span class="property">level</span>: <span class="string">'error'</span>,
+      message,
+      error,
+      metadata
+    }
+    <span class="keyword">this</span>.logs.<span class="function">push</span>(entry)
+    console.<span class="function">error</span>(<span class="string">`[error] </span>${message}<span class="string">`</span>, error || <span class="string">''</span>)
+  }
+
+  <span class="function">getLogs</span>(): <span class="type">LogEntry</span>[] {
+    <span class="keyword">return</span> [...<span class="keyword">this</span>.logs]
+  }
+}
+
+<span class="comment">// 使用</span>
+<span class="keyword">const</span> logger = <span class="keyword">new</span> <span class="type">Logger</span>()
+
+<span class="keyword">try</span> {
+  <span class="function">riskyOperation</span>()
+} <span class="keyword">catch</span> (error) {
+  logger.<span class="function">error</span>(<span class="string">'操作失败'</span>, error <span class="keyword">as</span> <span class="type">Error</span>, { <span class="property">userId</span>: <span class="number">42</span> })
+}</code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>TypeScript 错误处理完全指南</p>
+    <p style="margin-top: 0.5rem;">让你的代码更加健壮可靠</p>
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#ef4444',
+        primaryTextColor: '#e6edf3',
+        primaryBorderColor: '#f87171',
+        lineColor: '#8b949e',
+        secondaryColor: '#161b22',
+        tertiaryColor: '#0d1117'
+      }
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.type-card, .mermaid-container').forEach(el => {
+      el.classList.add('animate-on-scroll');
+      observer.observe(el);
+    });
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(link.getAttribute('href').substring(1));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>

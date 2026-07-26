@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeScript 类型断言与类型推断完全指南</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #3178c6;
+      --primary-light: #519aba;
+      --primary-dark: #235a97;
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-code: #1c2128;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --success: #3fb950;
+      --error: #f85149;
+      --warning: #d29922;
+      --violet: #8b5cf6;
+      --purple: #a855f7;
+      --fuchsia: #d946ef;
+      --gradient-1: linear-gradient(135deg, #8b5cf6, #a855f7);
+      --gradient-2: linear-gradient(135deg, #d946ef, #ec4899);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 20%, rgba(139, 92, 246, 0.15), transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(168, 85, 247, 0.1), transparent 50%),
+                  var(--bg);
+      padding: 2rem;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.3) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid var(--violet);
+      border-radius: 50px;
+      font-size: 0.9rem;
+      color: var(--violet);
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--violet));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s ease 0.1s both;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 3rem;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .stat-item { text-align: center; }
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 0.9rem; color: var(--text-muted); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-inner::-webkit-scrollbar { display: none; }
+
+    .nav-link {
+      white-space: nowrap;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(139, 92, 246, 0.2);
+      color: var(--violet);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    .section { margin-bottom: 6rem; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .section-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+
+    .section-icon.basics { background: var(--gradient-1); }
+    .section-icon.advanced { background: var(--gradient-2); }
+    .section-icon.practice { background: linear-gradient(135deg, #10b981, #06b6d4); }
+
+    .section-title { font-size: 2rem; font-weight: 700; }
+    .section-subtitle { color: var(--text-muted); font-size: 1rem; }
+
+    .type-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .type-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--gradient-1);
+      border-radius: 4px 0 0 4px;
+    }
+
+    .type-card:hover {
+      border-color: var(--violet);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
+    }
+
+    .type-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .type-name {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--violet);
+    }
+
+    .type-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-core { background: rgba(139, 92, 246, 0.2); color: var(--violet); border: 1px solid var(--violet); }
+    .badge-common { background: rgba(168, 85, 247, 0.2); color: var(--purple); border: 1px solid var(--purple); }
+    .badge-advanced { background: rgba(217, 70, 239, 0.2); color: var(--fuchsia); border: 1px solid var(--fuchsia); }
+    .badge-caution { background: rgba(239, 68, 68, 0.2); color: var(--error); border: 1px solid var(--error); }
+
+    .type-translation { color: var(--text-muted); font-size: 0.95rem; }
+    .type-description { margin-bottom: 1.5rem; color: var(--text); line-height: 1.8; }
+
+    .code-wrapper { position: relative; margin: 1.5rem 0; }
+
+    .code-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 0.4rem 1rem;
+      background: var(--violet);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 0 0 8px 0;
+      z-index: 1;
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      padding-top: 2.5rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    code { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+    .inline-code {
+      background: rgba(139, 92, 246, 0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--violet);
+    }
+
+    .keyword { color: #ff7b72; }
+    .type { color: #79c0ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .function { color: #d2a8ff; }
+    .property { color: #e6edf3; }
+
+    .mermaid-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 2rem 0;
+      text-align: center;
+    }
+
+    .mermaid-container h4 {
+      margin-bottom: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .visual-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      padding: 2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+
+    .diagram-box {
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+      min-width: 150px;
+    }
+
+    .diagram-box.input { background: rgba(139, 92, 246, 0.2); border: 2px solid var(--violet); }
+    .diagram-box.output { background: rgba(16, 185, 129, 0.2); border: 2px solid var(--success); }
+    .diagram-box.comparison { background: rgba(239, 68, 68, 0.2); border: 2px solid var(--error); }
+
+    .diagram-arrow { font-size: 1.5rem; color: var(--text-muted); font-weight: 600; }
+    .diagram-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .diagram-value { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.9rem; }
+
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .api-table th {
+      background: var(--violet);
+      padding: 1rem 1.5rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .api-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .api-table tr:last-child td { border-bottom: none; }
+    .api-table tr:hover td { background: rgba(139, 92, 246, 0.1); }
+
+    .footer {
+      text-align: center;
+      padding: 4rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .hero-stats { gap: 2rem; }
+      .stat-number { font-size: 2rem; }
+      .section-header { flex-direction: column; text-align: center; }
+      .visual-diagram { flex-direction: column; }
+      .diagram-arrow { transform: rotate(90deg); }
+    }
+
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">TypeScript 类型系统</span>
+      <h1>类型断言与类型推断完全指南</h1>
+      <p>类型断言让你告诉编译器"我知道自己在做什么"，类型推断让编译器自动推导类型。掌握它们，驾驭 TypeScript 类型系统。</p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">5</div>
+          <div class="stat-label">断言类型</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">4</div>
+          <div class="stat-label">推断规则</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">4</div>
+          <div class="stat-label">实战案例</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#overview" class="nav-link">总览对比</a>
+      <a href="#as" class="nav-link">as 语法</a>
+      <a href="#const" class="nav-link">as const</a>
+      <a href="#nonnull" class="nav-link">非空断言</a>
+      <a href="#limits" class="nav-link">断言限制</a>
+      <a href="#inference" class="nav-link">类型推断</a>
+      <a href="#infer" class="nav-link">infer 关键字</a>
+      <a href="#cases" class="nav-link">实战案例</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section id="overview" class="section">
+      <div class="section-header">
+        <div class="section-icon basics">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+            <rect x="9" y="3" width="6" height="4" rx="1"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">类型断言 vs 类型推断</h2>
+          <p class="section-subtitle">两大支柱</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Assertion vs Inference</span>
+        </div>
+        <div class="visual-diagram">
+          <div class="diagram-box input">
+            <div class="diagram-label">类型断言</div>
+            <div class="diagram-value">你告诉编译器类型</div>
+          </div>
+          <div class="diagram-arrow">vs</div>
+          <div class="diagram-box output">
+            <div class="diagram-label">类型推断</div>
+            <div class="diagram-value">编译器自动推导</div>
+          </div>
+        </div>
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>特性</th>
+              <th>类型断言</th>
+              <th>类型推断</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>控制者</td>
+              <td>开发者</td>
+              <td>编译器</td>
+            </tr>
+            <tr>
+              <td>语法</td>
+              <td><code class="inline-code">x as Type</code></td>
+              <td>自动</td>
+            </tr>
+            <tr>
+              <td>安全性</td>
+              <td>不检查</td>
+              <td>编译器验证</td>
+            </tr>
+            <tr>
+              <td>推荐度</td>
+              <td>⚠️ 谨慎使用</td>
+              <td>✅ 优先使用</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="as" class="section">
+      <div class="section-header">
+        <div class="section-icon basics">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">as 语法</h2>
+          <p class="section-subtitle">推荐的类型断言方式</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">x as Type</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">类型断言 - 告诉编译器类型</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 基本用法</span>
+<span class="keyword">let</span> a: <span class="type">any</span> = <span class="string">'hello'</span>
+<span class="keyword">let</span> b = a <span class="keyword">as</span> <span class="type">string</span>
+console.<span class="function">log</span>(b.<span class="function">toUpperCase</span>())  <span class="comment">// ✅</span>
+
+<span class="comment">// DOM 操作</span>
+<span class="keyword">const</span> div = document.<span class="function">getElementById</span>(<span class="string">'app'</span>) <span class="keyword">as</span> <span class="type">HTMLDivElement</span>
+div.style.color = <span class="string">'red'</span>
+
+<span class="comment">// 与类型注解的区别</span>
+<span class="keyword">let</span> x: <span class="type">string</span> = <span class="string">'hello'</span>    <span class="comment">// 类型注解（编译器检查）</span>
+<span class="keyword">let</span> y = <span class="string">'hello'</span> <span class="keyword">as</span> <span class="type">string</span>  <span class="comment">// 类型断言（不检查）</span>
+
+<span class="comment">// 尖括号语法（不推荐，与 JSX 冲突）</span>
+<span class="keyword">let</span> length = (&lt;<span class="type">string</span>&gt;someValue).<span class="property">length</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="const" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">as const 断言</h2>
+          <p class="section-subtitle">固定字面量类型</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">x as const</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">as const - 生成最精确的只读类型</span>
+        </div>
+        <div class="visual-diagram">
+          <div class="diagram-box comparison">
+            <div class="diagram-label">❌ 没有 as const</div>
+            <div class="diagram-value">{ apiUrl: string; timeout: number }</div>
+          </div>
+          <div class="diagram-arrow">→ as const →</div>
+          <div class="diagram-box output">
+            <div class="diagram-label">✅ 使用 as const</div>
+            <div class="diagram-value">{ readonly apiUrl: 'https://...'; readonly timeout: 5000 }</div>
+          </div>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 对象</span>
+<span class="keyword">const</span> config = {
+  <span class="property">apiUrl</span>: <span class="string">'https://api.example.com'</span>,
+  <span class="property">timeout</span>: <span class="number">5000</span>
+} <span class="keyword">as const</span>
+<span class="comment">// { readonly apiUrl: 'https://api.example.com'; readonly timeout: 5000 }</span>
+
+<span class="comment">// 数组</span>
+<span class="keyword">const</span> arr = [<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>] <span class="keyword">as const</span>
+<span class="comment">// readonly ['a', 'b', 'c']</span>
+
+<span class="comment">// 替代枚举</span>
+<span class="keyword">const</span> STATUS = {
+  <span class="property">PENDING</span>: <span class="string">'pending'</span>,
+  <span class="property">ACTIVE</span>: <span class="string">'active'</span>,
+  <span class="property">DELETED</span>: <span class="string">'deleted'</span>
+} <span class="keyword">as const</span>
+
+<span class="keyword">type</span> <span class="type">Status</span> = <span class="keyword">typeof</span> STATUS[<span class="keyword">keyof</span> <span class="keyword">typeof</span> STATUS]
+<span class="comment">// 'pending' | 'active' | 'deleted'</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="nonnull" class="section">
+      <div class="section-header">
+        <div class="section-icon basics">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">非空断言（!）</h2>
+          <p class="section-subtitle">排除 null/undefined</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">x!</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">非空断言 - 假设值不为 null</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 可能为 null</span>
+<span class="keyword">function</span> <span class="function">getLength</span>(<span class="property">value</span>: <span class="type">string</span> | <span class="keyword">null</span>): <span class="type">number</span> {
+  <span class="comment">// return value.length  // ❌ 编译器报错</span>
+  <span class="keyword">return</span> value!.<span class="property">length</span>  <span class="comment">// ✅ 使用非空断言</span>
+}
+
+<span class="comment">// DOM 操作</span>
+<span class="keyword">const</span> element = document.<span class="function">getElementById</span>(<span class="string">'app'</span>)!
+element.style.color = <span class="string">'red'</span>
+
+<span class="comment">// ⚠️ 非空断言不会在运行时检查</span>
+<span class="keyword">let</span> value: <span class="type">string</span> | <span class="keyword">null</span> = <span class="keyword">null</span>
+console.<span class="function">log</span>(value!.<span class="property">length</span>)  <span class="comment">// ❌ 运行时错误！</span>
+
+<span class="comment">// 更安全的写法</span>
+<span class="keyword">function</span> <span class="function">process</span>(<span class="property">value</span>: <span class="type">string</span> | <span class="keyword">null</span>): <span class="type">string</span> {
+  <span class="keyword">if</span> (value === <span class="keyword">null</span>) {
+    <span class="keyword">return</span> <span class="string">'default'</span>
+  }
+  <span class="keyword">return</span> value.<span class="property">length</span>.<span class="function">toString</span>()  <span class="comment">// ✅ 编译器自动缩窄</span>
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="limits" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">类型断言的限制</h2>
+          <p class="section-subtitle">不能随意断言</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">类型断言规则</span>
+          <span class="type-badge badge-caution">注意</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// ❌ 不允许任意类型间断言</span>
+<span class="keyword">let</span> num: <span class="type">number</span> = <span class="number">42</span>
+<span class="keyword">let</span> str = num <span class="keyword">as</span> <span class="type">string</span>  <span class="comment">// ❌ 报错</span>
+
+<span class="comment">// ✅ 使用 unknown 中转（双重断言）</span>
+<span class="keyword">let</span> str2 = num <span class="keyword">as</span> <span class="type">unknown</span> <span class="keyword">as</span> <span class="type">string</span>  <span class="comment">// ✅</span>
+
+<span class="comment">// ✅ 可以从联合类型断言为具体类型</span>
+<span class="keyword">let</span> value: <span class="type">string</span> | <span class="type">number</span> = <span class="string">'hello'</span>
+<span class="keyword">let</span> str3 = value <span class="keyword">as</span> <span class="type">string</span>  <span class="comment">// ✅</span>
+
+<span class="comment">// ❌ 不允许具体类型断言为联合类型</span>
+<span class="keyword">let</span> str4: <span class="type">string</span> = <span class="string">'hello'</span>
+<span class="keyword">let</span> union = str4 <span class="keyword">as</span> <span class="type">string</span> | <span class="type">number</span>  <span class="comment">// ❌ 报错</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="inference" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">类型推断</h2>
+          <p class="section-subtitle">编译器自动推导</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">TypeScript Inference</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">类型推断 - 编译器自动推导类型</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 变量推断</span>
+<span class="keyword">let</span> name = <span class="string">'Alice'</span>      <span class="comment">// string</span>
+<span class="keyword">let</span> age = <span class="number">30</span>             <span class="comment">// number</span>
+<span class="keyword">let</span> active = <span class="keyword">true</span>        <span class="comment">// boolean</span>
+<span class="keyword">let</span> arr = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]  <span class="comment">// number[]</span>
+
+<span class="comment">// 函数返回值推断</span>
+<span class="keyword">function</span> <span class="function">add</span>(<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>) {
+  <span class="keyword">return</span> a + b  <span class="comment">// 自动推断为 number</span>
+}
+
+<span class="comment">// 回调参数推断</span>
+<span class="keyword">const</span> numbers = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]
+numbers.<span class="function">map</span>(<span class="property">x</span> =&gt; x * <span class="number">2</span>)  <span class="comment">// x 自动推断为 number</span>
+
+<span class="comment">// 最佳通用类型</span>
+<span class="keyword">let</span> mixed = [<span class="number">1</span>, <span class="string">'hello'</span>, <span class="keyword">true</span>]
+<span class="comment">// 推断为 (number | string | boolean)[]</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="infer" class="section">
+      <div class="section-header">
+        <div class="section-icon practice">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">infer 关键字</h2>
+          <p class="section-subtitle">条件类型中推断类型</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">infer T</span>
+          <span class="type-badge badge-advanced">进阶</span>
+          <span class="type-translation">infer - 在条件类型中推断类型</span>
+        </div>
+        <div class="mermaid-container">
+          <h4>infer 工作原理</h4>
+          <pre class="mermaid">
+flowchart LR
+    A["T extends (...args: any[]) =&gt; infer R"] --> B{"T 是函数?"}
+            B -->|Yes| C["返回 R（推断的返回类型）"]
+            B -->|No| D["返回 never"]
+          </pre>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 推断函数返回类型</span>
+<span class="keyword">type</span> <span class="type">ReturnType</span>&lt;<span class="type">T</span>&gt; = <span class="type">T</span> <span class="keyword">extends</span> (...<span class="property">args</span>: <span class="type">any</span>[]) =&gt; <span class="keyword">infer</span> <span class="type">R</span> ? <span class="type">R</span> : <span class="keyword">never</span>
+
+<span class="keyword">type</span> <span class="type">Fn</span> = () =&gt; <span class="type">string</span>
+<span class="keyword">type</span> <span class="type">Result</span> = <span class="type">ReturnType</span>&lt;<span class="type">Fn</span>&gt;  <span class="comment">// string</span>
+
+<span class="comment">// 推断 Promise 内部类型</span>
+<span class="keyword">type</span> <span class="type">UnwrapPromise</span>&lt;<span class="type">T</span>&gt; = <span class="type">T</span> <span class="keyword">extends</span> <span class="type">Promise</span>&lt;<span class="keyword">infer</span> <span class="type">R</span>&gt; ? <span class="type">R</span> : <span class="type">T</span>
+
+<span class="keyword">type</span> <span class="type">A</span> = <span class="type">UnwrapPromise</span>&lt;<span class="type">Promise</span>&lt;<span class="type">string</span>&gt;&gt;           <span class="comment">// string</span>
+<span class="keyword">type</span> <span class="type">B</span> = <span class="type">UnwrapPromise</span>&lt;<span class="type">Promise</span>&lt;<span class="type">Promise</span>&lt;<span class="type">number</span>&gt;&gt;&gt;  <span class="comment">// number</span>
+
+<span class="comment">// 推断函数参数类型</span>
+<span class="keyword">type</span> <span class="type">FirstArg</span>&lt;<span class="type">T</span>&gt; = <span class="type">T</span> <span class="keyword">extends</span> (<span class="property">first</span>: <span class="keyword">infer</span> <span class="type">F</span>, ...<span class="property">args</span>: <span class="type">any</span>[]) =&gt; <span class="type">any</span> ? <span class="type">F</span> : <span class="keyword">never</span>
+
+<span class="keyword">type</span> <span class="type">C</span> = <span class="type">FirstArg</span>&lt;(<span class="property">name</span>: <span class="type">string</span>, <span class="property">age</span>: <span class="type">number</span>) =&gt; <span class="type">void</span>&gt;  <span class="comment">// string</span>
+
+<span class="comment">// 推断元组类型</span>
+<span class="keyword">type</span> <span class="type">Head</span>&lt;<span class="type">T</span>&gt; = <span class="type">T</span> <span class="keyword">extends</span> [<span class="keyword">infer</span> <span class="type">H</span>, ...<span class="type">any</span>[]] ? <span class="type">H</span> : <span class="keyword">never</span>
+<span class="keyword">type</span> <span class="type">Tail</span>&lt;<span class="type">T</span>&gt; = <span class="type">T</span> <span class="keyword">extends</span> [<span class="type">any</span>, ...<span class="keyword">infer</span> <span class="type">R</span>] ? <span class="type">R</span> : <span class="keyword">never</span>
+
+<span class="keyword">type</span> <span class="type">D</span> = <span class="type">Head</span>&lt;[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]&gt;  <span class="comment">// 1</span>
+<span class="keyword">type</span> <span class="type">E</span> = <span class="type">Tail</span>&lt;[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]&gt;  <span class="comment">// [2, 3]</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="cases" class="section">
+      <div class="section-header">
+        <div class="section-icon practice">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+            <path d="M13 2v7h7"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">实战案例</h2>
+          <p class="section-subtitle">真实场景中的应用</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 1：DOM 操作</span>
+          <span class="type-badge badge-common">常用</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 不推荐：使用断言</span>
+<span class="keyword">const</span> div = document.<span class="function">getElementById</span>(<span class="string">'app'</span>) <span class="keyword">as</span> <span class="type">HTMLDivElement</span>
+
+<span class="comment">// 推荐：使用类型守卫</span>
+<span class="keyword">function</span> <span class="function">getElementById</span>(<span class="property">id</span>: <span class="type">string</span>): <span class="type">HTMLElement</span> {
+  <span class="keyword">const</span> element = document.<span class="function">getElementById</span>(id)
+  <span class="keyword">if</span> (!element) {
+    <span class="keyword">throw new</span> <span class="type">Error</span>(<span class="string">`元素 </span>${id}<span class="string"> 不存在`</span>)
+  }
+  <span class="keyword">return</span> element  <span class="comment">// 类型缩窄，无需断言</span>
+}
+
+<span class="comment">// 确定类型时使用断言</span>
+<span class="keyword">const</span> input = document.<span class="function">getElementById</span>(<span class="string">'myInput'</span>) <span class="keyword">as</span> <span class="type">HTMLInputElement</span>
+input.value = <span class="string">'hello'</span></code></pre>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 2：API 响应处理</span>
+          <span class="type-badge badge-common">常用</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">interface</span> <span class="type">User</span> {
+  <span class="property">id</span>: <span class="type">number</span>
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">email</span>: <span class="type">string</span>
+}
+
+<span class="comment">// 类型守卫</span>
+<span class="keyword">function</span> <span class="function">isUser</span>(<span class="property">value</span>: <span class="type">unknown</span>): <span class="property">value</span> <span class="keyword">is</span> <span class="type">User</span> {
+  <span class="keyword">return</span> (
+    <span class="keyword">typeof</span> value === <span class="string">'object'</span> &amp;&amp;
+    value !== <span class="keyword">null</span> &amp;&amp;
+    <span class="string">'id'</span> <span class="keyword">in</span> value &amp;&amp;
+    <span class="string">'name'</span> <span class="keyword">in</span> value &amp;&amp;
+    <span class="string">'email'</span> <span class="keyword">in</span> value
+  )
+}
+
+<span class="keyword">async function</span> <span class="function">fetchUser</span>(<span class="property">id</span>: <span class="type">number</span>): <span class="type">Promise</span>&lt;<span class="type">User</span>&gt; {
+  <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">`/api/users/</span>${id}<span class="string">`</span>)
+  <span class="keyword">const</span> data = <span class="keyword">await</span> response.<span class="function">json</span>()
+  <span class="keyword">if</span> (!<span class="function">isUser</span>(data)) {
+    <span class="keyword">throw new</span> <span class="type">Error</span>(<span class="string">'无效的用户数据'</span>)
+  }
+  <span class="keyword">return</span> data  <span class="comment">// 类型安全</span>
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 3：泛型工具函数</span>
+          <span class="type-badge badge-advanced">进阶</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 使用 infer 推断类型</span>
+<span class="keyword">type</span> <span class="type">UnwrapPromise</span>&lt;<span class="type">T</span>&gt; = <span class="type">T</span> <span class="keyword">extends</span> <span class="type">Promise</span>&lt;<span class="keyword">infer</span> <span class="type">R</span>&gt; ? <span class="type">R</span> : <span class="type">T</span>
+<span class="keyword">type</span> <span class="type">DeepUnwrap</span>&lt;<span class="type">T</span>&gt; = <span class="type">T</span> <span class="keyword">extends</span> <span class="type">Promise</span>&lt;<span class="keyword">infer</span> <span class="type">R</span>&gt; ? <span class="type">DeepUnwrap</span>&lt;<span class="type">R</span>&gt; : <span class="type">T</span>
+
+<span class="comment">// 使用示例</span>
+<span class="keyword">async function</span> <span class="function">fetchData</span>() {
+  <span class="keyword">return</span> { <span class="property">id</span>: <span class="number">1</span>, <span class="property">name</span>: <span class="string">'Alice'</span> }
+}
+
+<span class="keyword">type</span> <span class="type">DataType</span> = <span class="type">DeepUnwrap</span>&lt;<span class="type">ReturnType</span>&lt;<span class="keyword">typeof</span> fetchData&gt;&gt;
+<span class="comment">// { id: number; name: string }</span></code></pre>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 4：as const 模拟枚举</span>
+          <span class="type-badge badge-common">常用</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 使用 as const 替代枚举</span>
+<span class="keyword">const</span> Directions = {
+  <span class="property">UP</span>: <span class="string">'up'</span>,
+  <span class="property">DOWN</span>: <span class="string">'down'</span>,
+  <span class="property">LEFT</span>: <span class="string">'left'</span>,
+  <span class="property">RIGHT</span>: <span class="string">'right'</span>
+} <span class="keyword">as const</span>
+
+<span class="keyword">type</span> <span class="type">Direction</span> = <span class="keyword">typeof</span> Directions[<span class="keyword">keyof</span> <span class="keyword">typeof</span> Directions]
+<span class="comment">// 'up' | 'down' | 'left' | 'right'</span>
+
+<span class="comment">// 使用</span>
+<span class="keyword">function</span> <span class="function">move</span>(<span class="property">direction</span>: <span class="type">Direction</span>) {
+  console.<span class="function">log</span>(<span class="string">`向${</span>direction<span class="string">}移动`</span>)
+}
+
+<span class="function">move</span>(Directions.UP)  <span class="comment">// ✅ 自动补全</span>
+<span class="function">move</span>(<span class="string">'up'</span>)           <span class="comment">// ✅ 也支持字符串</span></code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>TypeScript 类型断言与类型推断完全指南</p>
+    <p style="margin-top: 0.5rem;">驾驭 TypeScript 类型系统的两大支柱</p>
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#8b5cf6',
+        primaryTextColor: '#e6edf3',
+        primaryBorderColor: '#a78bfa',
+        lineColor: '#8b949e',
+        secondaryColor: '#161b22',
+        tertiaryColor: '#0d1117'
+      }
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.type-card, .mermaid-container').forEach(el => {
+      el.classList.add('animate-on-scroll');
+      observer.observe(el);
+    });
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(link.getAttribute('href').substring(1));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>

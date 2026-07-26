@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeScript 学习文档总目录</title>
+  <style>
+    :root {
+      --primary: #3178c6;
+      --primary-light: #519aba;
+      --primary-dark: #235a97;
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-hover: #1c2128;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --success: #3fb950;
+      --accent-1: #3178c6;
+      --accent-2: #a855f7;
+      --accent-3: #f97316;
+      --accent-4: #10b981;
+      --accent-5: #06b6d4;
+      --accent-6: #ec4899;
+      --accent-7: #ef4444;
+      --accent-8: #6366f1;
+      --accent-9: #f59e0b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 60vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 20%, rgba(49, 120, 198, 0.15), transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(168, 85, 247, 0.1), transparent 50%),
+                  var(--bg);
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--accent-1), var(--accent-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 2rem;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .stat { text-align: center; }
+
+    .stat-num {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    .section {
+      margin-bottom: 4rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .section-icon.c1 { background: linear-gradient(135deg, #3178c6, #519aba); }
+    .section-icon.c2 { background: linear-gradient(135deg, #a855f7, #6366f1); }
+    .section-icon.c3 { background: linear-gradient(135deg, #f97316, #f59e0b); }
+    .section-icon.c4 { background: linear-gradient(135deg, #10b981, #06b6d4); }
+    .section-icon.c5 { background: linear-gradient(135deg, #06b6d4, #0ea5e9); }
+    .section-icon.c6 { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+    .section-icon.c7 { background: linear-gradient(135deg, #ef4444, #f97316); }
+    .section-icon.c8 { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .doc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .doc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .doc-card:hover {
+      border-color: var(--accent-1);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(49, 120, 198, 0.15);
+    }
+
+    .doc-card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .doc-card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      flex: 1;
+    }
+
+    .doc-links {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .doc-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .doc-link.md {
+      background: rgba(49, 120, 198, 0.15);
+      color: var(--accent-1);
+      border: 1px solid rgba(49, 120, 198, 0.3);
+    }
+
+    .doc-link.md:hover {
+      background: rgba(49, 120, 198, 0.25);
+      border-color: var(--accent-1);
+    }
+
+    .doc-link.html {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-4);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .doc-link.html:hover {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: var(--accent-4);
+    }
+
+    .doc-link svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .learning-path {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-top: 4rem;
+    }
+
+    .learning-path h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .path-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .path-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .path-card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .path-card ol {
+      padding-left: 1.25rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .path-card li {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .doc-grid {
+        grid-template-columns: 1fr;
+      }
+      .path-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <h1>TypeScript 学习文档</h1>
+      <p>从入门到精通，28 个主题、56 份文档，覆盖 TypeScript 核心特性完整知识图谱</p>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-num">28</div>
+          <div class="stat-label">学习主题</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">56</div>
+          <div class="stat-label">文档文件</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">1.4MB</div>
+          <div class="stat-label">文档总量</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 快速开始 -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background: linear-gradient(135deg, #3b82f6, #06b6d4);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">🚀 快速开始</h2>
+          <p class="section-desc">TypeScript 新手建议从这里开始</p>
+        </div>
+      </div>
+
+      <div class="doc-grid">
+        <div class="doc-card" style="border-color: var(--blue);">
+          <h3>⚡ 日常开发快速入门</h3>
+          <p>聚焦日常开发最常用的特性，5 分钟上手 TypeScript。涵盖基础类型、接口、函数、类、泛型、类型守卫、映射类型等核心内容。</p>
+          <div class="doc-links">
+            <a href="typescript-quick-start.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-quick-start.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 核心类型系统 -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon c1">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">核心类型系统</h2>
+          <p class="section-desc">TypeScript 类型系统的基础知识</p>
+        </div>
+      </div>
+
+      <div class="doc-grid">
+        <div class="doc-card">
+          <h3>📘 全部类型</h3>
+          <p>原始类型、特殊类型、对象类型、数组、联合类型等完整类型体系</p>
+          <div class="doc-links">
+            <a href="typescript-all-types.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-all-types.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>📘 内置工具类型</h3>
+          <p>Partial、Required、Pick、Omit、Record 等内置工具类型详解</p>
+          <div class="doc-links">
+            <a href="typescript-builtin-types.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-builtin-types.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>📘 Utility Types</h3>
+          <p>工具类型深入解析，含原理和实现</p>
+          <div class="doc-links">
+            <a href="typescript-utility-types.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-utility-types.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>📘 类型守卫</h3>
+          <p>typeof、instanceof、in、自定义类型守卫、穷尽检查</p>
+          <div class="doc-links">
+            <a href="typescript-type-guards.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-type-guards.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>📘 类型断言与推断</h3>
+          <p>as 断言、as const、非空断言、infer 关键字</p>
+          <div class="doc-links">
+            <a href="typescript-assertions-inference.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-assertions-inference.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 类型定义 -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon c2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18"/>
+            <path d="M9 21V9"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">类型定义</h2>
+          <p class="section-desc">定义和组织类型的方式</p>
+        </div>
+      </div>
+
+      <div class="doc-grid">
+        <div class="doc-card">
+          <h3>🟠 Interface 接口</h3>
+          <p>接口定义、继承、声明合并、函数类型</p>
+          <div class="doc-links">
+            <a href="typescript-interface.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-interface.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>🟠 Type 类型别名</h3>
+          <p>联合类型、交叉类型、元组、映射类型、条件类型</p>
+          <div class="doc-links">
+            <a href="typescript-type.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-type.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>🟠 枚举 Enum</h3>
+          <p>数字枚举、字符串枚举、const 枚举、反向映射</p>
+          <div class="doc-links">
+            <a href="typescript-enum.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-enum.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 类型操作 -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon c3">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">类型操作</h2>
+          <p class="section-desc">高级类型编程技术</p>
+        </div>
+      </div>
+
+      <div class="doc-grid">
+        <div class="doc-card">
+          <h3>⭐ 泛型</h3>
+          <p>泛型函数、泛型类、泛型约束、泛型默认值</p>
+          <div class="doc-links">
+            <a href="typescript-generics.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-generics.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>⭐ 条件类型</h3>
+          <p>T extends U ? X : Y、infer 关键字、分布式条件</p>
+          <div class="doc-links">
+            <a href="typescript-conditional-types.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-conditional-types.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>⭐ 映射类型</h3>
+          <p>[K in keyof T]、键修饰符、键重映射（as）</p>
+          <div class="doc-links">
+            <a href="typescript-mapped-types.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-mapped-types.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>⭐ 模板字面量类型</h3>
+          <p>编译时字符串操作、内置字符串工具</p>
+          <div class="doc-links">
+            <a href="typescript-template-literal-types.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-template-literal-types.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>⭐ 类型推断</h3>
+          <p>编译器自动推导类型、infer、上下文推断</p>
+          <div class="doc-links">
+            <a href="typescript-type-inference.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-type-inference.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 函数与异步 -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon c4">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">函数与异步</h2>
+          <p class="section-desc">函数类型和异步编程</p>
+        </div>
+      </div>
+
+      <div class="doc-grid">
+        <div class="doc-card">
+          <h3>🟢 函数</h3>
+          <p>函数类型、可选参数、重载、高阶函数、柯里化</p>
+          <div class="doc-links">
+            <a href="typescript-functions.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-functions.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>🟢 async/await 与 Promise</h3>
+          <p>Promise 基础、async/await、静态方法、并发控制</p>
+          <div class="doc-links">
+            <a href="typescript-async-await-promise.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-async-await-promise.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>🔴 错误处理</h3>
+          <p>try/catch、自定义错误、类型守卫、Result 模式、错误边界</p>
+          <div class="doc-links">
+            <a href="typescript-error-handling.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-error-handling.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 面向对象 -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon c5">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <path d="M22 4L12 14.01l-3-3"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">面向对象</h2>
+          <p class="section-desc">类、装饰器与设计模式</p>
+        </div>
+      </div>
+
+      <div class="doc-grid">
+        <div class="doc-card">
+          <h3>🔷 类</h3>
+          <p>访问修饰符、继承、抽象类、接口实现、混入</p>
+          <div class="doc-links">
+            <a href="typescript-classes.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-classes.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>🔷 装饰器</h3>
+          <p>类装饰器、方法装饰器、装饰器工厂、装饰器组合</p>
+          <div class="doc-links">
+            <a href="typescript-decorators.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-decorators.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>🔷 装饰器新旧对比</h3>
+          <p>Legacy（Stage 2）vs Standard（Stage 3）装饰器全面对比</p>
+          <div class="doc-links">
+            <a href="typescript-decorators-comparison.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-decorators-comparison.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 项目配置与模块 -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon c6">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <path d="M14 2v6h6"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">项目配置与模块</h2>
+          <p class="section-desc">配置、模块系统与类型声明</p>
+        </div>
+      </div>
+
+      <div class="doc-grid">
+        <div class="doc-card">
+          <h3>⚙️ tsconfig 配置</h3>
+          <p>compilerOptions、strict 模块、路径映射、项目引用</p>
+          <div class="doc-links">
+            <a href="typescript-tsconfig.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-tsconfig.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>📦 模块与命名空间</h3>
+          <p>ES 模块、CommonJS、命名空间、环境声明</p>
+          <div class="doc-links">
+            <a href="typescript-modules-namespaces.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-modules-namespaces.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>📄 声明文件</h3>
+          <p>.d.ts 文件、模块声明、全局声明、@types</p>
+          <div class="doc-links">
+            <a href="typescript-declaration-files.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-declaration-files.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第三方库 -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon c7">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">第三方库</h2>
+          <p class="section-desc">补充内置类型的实用库</p>
+        </div>
+      </div>
+
+      <div class="doc-grid">
+        <div class="doc-card">
+          <h3>📚 type-fest</h3>
+          <p>第三方实用类型库，补充内置类型无法覆盖的场景</p>
+          <div class="doc-links">
+            <a href="type-fest.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="type-fest.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <h3>📚 reflect-metadata</h3>
+          <p>反射元数据 API，装饰器生态的基石</p>
+          <div class="doc-links">
+            <a href="reflect-metadata.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="reflect-metadata.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 新特性 -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon c8">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">新特性</h2>
+          <p class="section-desc">TypeScript 最新版本特性</p>
+        </div>
+      </div>
+
+      <div class="doc-grid">
+        <div class="doc-card">
+          <h3>🆕 TypeScript 6.0 新特性</h3>
+          <p>新特性、破坏性变更、废弃选项、迁移指南</p>
+          <div class="doc-links">
+            <a href="typescript-6-new-features.md" class="doc-link md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>MD</a>
+            <a href="typescript-6-new-features.html" class="doc-link html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>HTML</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 学习路线 -->
+    <div class="learning-path">
+      <h2>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <path d="M22 4L12 14.01l-3-3"/>
+        </svg>
+        学习路线建议
+      </h2>
+      <div class="path-grid">
+        <div class="path-card">
+          <h3>🌱 入门阶段</h3>
+          <ol>
+            <li>全部类型 — 了解类型体系</li>
+            <li>Interface 接口 — 定义对象结构</li>
+            <li>Type 类型别名 — 联合/交叉类型</li>
+            <li>函数 — 函数类型和参数</li>
+          </ol>
+        </div>
+        <div class="path-card">
+          <h3>🌿 进阶阶段</h3>
+          <ol>
+            <li>泛型 — 类型安全的复用</li>
+            <li>类型守卫 — 运行时类型检查</li>
+            <li>类型断言与推断</li>
+            <li>类型推断 — 编译器自动推导</li>
+            <li>类 — 面向对象编程</li>
+            <li>枚举 — 命名常量</li>
+          </ol>
+        </div>
+        <div class="path-card">
+          <h3>🌳 高级阶段</h3>
+          <ol>
+            <li>条件类型 — 类型层面的条件判断</li>
+            <li>映射类型 — 遍历键创建新类型</li>
+            <li>模板字面量类型 — 编译时字符串操作</li>
+            <li>装饰器 — 元编程</li>
+            <li>模块与命名空间</li>
+            <li>声明文件</li>
+            <li>错误处理</li>
+            <li>tsconfig 配置</li>
+          </ol>
+        </div>
+        <div class="path-card">
+          <h3>🚀 扩展学习</h3>
+          <ol>
+            <li>内置工具类型</li>
+            <li>Utility Types 深入</li>
+            <li>type-fest 第三方库</li>
+            <li>reflect-metadata</li>
+            <li>装饰器新旧对比</li>
+            <li>TypeScript 6.0 新特性</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>TypeScript 学习文档总目录</p>
+    <p style="margin-top: 0.5rem;">28 个主题 · 56 份文档 · 1.4MB 知识图谱</p>
+  </footer>
+</body>
+</html>

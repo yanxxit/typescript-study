@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeScript 装饰器（Decorators）完全指南</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #3178c6;
+      --primary-light: #519aba;
+      --primary-dark: #235a97;
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-code: #1c2128;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --success: #3fb950;
+      --error: #f85149;
+      --warning: #d29922;
+      --amber: #f59e0b;
+      --indigo: #6366f1;
+      --violet: #8b5cf6;
+      --gradient-1: linear-gradient(135deg, #f59e0b, #f97316);
+      --gradient-2: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 20%, rgba(245, 158, 11, 0.15), transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(99, 102, 241, 0.1), transparent 50%),
+                  var(--bg);
+      padding: 2rem;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(245, 158, 11, 0.3) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid var(--amber);
+      border-radius: 50px;
+      font-size: 0.9rem;
+      color: var(--amber);
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--amber));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s ease 0.1s both;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 3rem;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .stat-item { text-align: center; }
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 0.9rem; color: var(--text-muted); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-inner::-webkit-scrollbar { display: none; }
+
+    .nav-link {
+      white-space: nowrap;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--amber);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    .section { margin-bottom: 6rem; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .section-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+
+    .section-icon.basics { background: var(--gradient-1); }
+    .section-icon.advanced { background: var(--gradient-2); }
+    .section-icon.practice { background: linear-gradient(135deg, #10b981, #06b6d4); }
+
+    .section-title { font-size: 2rem; font-weight: 700; }
+    .section-subtitle { color: var(--text-muted); font-size: 1rem; }
+
+    .type-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .type-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--gradient-1);
+      border-radius: 4px 0 0 4px;
+    }
+
+    .type-card:hover {
+      border-color: var(--amber);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(245, 158, 11, 0.2);
+    }
+
+    .type-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .type-name {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--amber);
+    }
+
+    .type-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-core { background: rgba(245, 158, 11, 0.2); color: var(--amber); border: 1px solid var(--amber); }
+    .badge-common { background: rgba(99, 102, 241, 0.2); color: var(--indigo); border: 1px solid var(--indigo); }
+    .badge-advanced { background: rgba(139, 92, 246, 0.2); color: var(--violet); border: 1px solid var(--violet); }
+
+    .type-translation { color: var(--text-muted); font-size: 0.95rem; }
+    .type-description { margin-bottom: 1.5rem; color: var(--text); line-height: 1.8; }
+
+    .code-wrapper { position: relative; margin: 1.5rem 0; }
+
+    .code-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 0.4rem 1rem;
+      background: var(--amber);
+      color: #000;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 0 0 8px 0;
+      z-index: 1;
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      padding-top: 2.5rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    code { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+    .inline-code {
+      background: rgba(245, 158, 11, 0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--amber);
+    }
+
+    .keyword { color: #ff7b72; }
+    .type { color: #79c0ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .function { color: #d2a8ff; }
+    .property { color: #e6edf3; }
+
+    .mermaid-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 2rem 0;
+      text-align: center;
+    }
+
+    .mermaid-container h4 {
+      margin-bottom: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .visual-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      padding: 2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+
+    .diagram-box {
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+      min-width: 150px;
+    }
+
+    .diagram-box.input { background: rgba(245, 158, 11, 0.2); border: 2px solid var(--amber); }
+    .diagram-box.output { background: rgba(16, 185, 129, 0.2); border: 2px solid var(--success); }
+    .diagram-box.comparison { background: rgba(99, 102, 241, 0.2); border: 2px solid var(--indigo); }
+
+    .diagram-arrow { font-size: 1.5rem; color: var(--text-muted); font-weight: 600; }
+    .diagram-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .diagram-value { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.9rem; }
+
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .api-table th {
+      background: var(--amber);
+      color: #000;
+      padding: 1rem 1.5rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .api-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .api-table tr:last-child td { border-bottom: none; }
+    .api-table tr:hover td { background: rgba(245, 158, 11, 0.1); }
+
+    .footer {
+      text-align: center;
+      padding: 4rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .hero-stats { gap: 2rem; }
+      .stat-number { font-size: 2rem; }
+      .section-header { flex-direction: column; text-align: center; }
+      .visual-diagram { flex-direction: column; }
+      .diagram-arrow { transform: rotate(90deg); }
+    }
+
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">TypeScript 元编程</span>
+      <h1>装饰器完全指南</h1>
+      <p>装饰器（Decorators）是 TypeScript 最强大的元编程特性，可以在不修改原始代码的情况下添加功能。NestJS、Angular、MobX 等框架的核心。</p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">5</div>
+          <div class="stat-label">装饰器类型</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">5</div>
+          <div class="stat-label">实战案例</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">0</div>
+          <div class="stat-label">侵入性修改</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#basics" class="nav-link">基础概念</a>
+      <a href="#class" class="nav-link">类装饰器</a>
+      <a href="#method" class="nav-link">方法装饰器</a>
+      <a href="#accessor" class="nav-link">访问器装饰器</a>
+      <a href="#property" class="nav-link">属性装饰器</a>
+      <a href="#parameter" class="nav-link">参数装饰器</a>
+      <a href="#factory" class="nav-link">装饰器工厂</a>
+      <a href="#composition" class="nav-link">装饰器组合</a>
+      <a href="#cases" class="nav-link">实战案例</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section id="basics" class="section">
+      <div class="section-header">
+        <div class="section-icon basics">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">什么是装饰器</h2>
+          <p class="section-subtitle">声明式语法扩展功能</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">@decorator</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">装饰器 - 不修改原始代码添加功能</span>
+        </div>
+        <div class="type-description">
+          <p>装饰器是一种<strong>声明式语法</strong>，用于在不修改原始代码的情况下添加功能。使用 <code class="inline-code">@expression</code> 形式。</p>
+        </div>
+
+        <div class="visual-diagram">
+          <div class="diagram-box comparison">
+            <div class="diagram-label">❌ 没有装饰器</div>
+            <div class="diagram-value">手动添加日志代码</div>
+          </div>
+          <div class="diagram-arrow">→ 装饰器 →</div>
+          <div class="diagram-box output">
+            <div class="diagram-label">✅ 有装饰器</div>
+            <div class="diagram-value">@Log 自动添加</div>
+          </div>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="comment">// 没有装饰器</span>
+<span class="keyword">class</span> <span class="type">UserService</span> {
+  <span class="function">getUser</span>(<span class="property">id</span>: <span class="type">number</span>) {
+    console.<span class="function">log</span>(<span class="string">`获取用户 </span>${id}<span class="string">`</span>)  <span class="comment">// 手动添加</span>
+    <span class="keyword">return</span> { id, <span class="property">name</span>: <span class="string">'Alice'</span> }
+  }
+}
+
+<span class="comment">// 有装饰器</span>
+<span class="keyword">class</span> <span class="type">UserService</span> {
+  <span class="function">@Log</span>  <span class="comment">// 自动记录日志</span>
+  <span class="function">getUser</span>(<span class="property">id</span>: <span class="type">number</span>) {
+    <span class="keyword">return</span> { id, <span class="property">name</span>: <span class="string">'Alice'</span> }
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="class" class="section">
+      <div class="section-header">
+        <div class="section-icon basics">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18"/>
+            <path d="M9 21V9"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">类装饰器</h2>
+          <p class="section-subtitle">应用于类的构造函数</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">@ClassDecorator</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">类装饰器 - 修改或替换类定义</span>
+        </div>
+
+        <div class="mermaid-container">
+          <h4>类装饰器执行流程</h4>
+          <pre class="mermaid">
+flowchart LR
+    A["@Sealed"] --> B["接收 constructor"]
+    B --> C["Object.seal(constructor)"]
+    C --> D["返回修改后的类"]
+          </pre>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="comment">// 密封类：禁止添加新属性</span>
+<span class="keyword">function</span> <span class="function">Sealed</span>(<span class="property">constructor</span>: <span class="type">Function</span>) {
+  Object.<span class="function">seal</span>(constructor)
+  Object.<span class="function">seal</span>(constructor.prototype)
+}
+
+<span class="function">@Sealed</span>
+<span class="keyword">class</span> <span class="type">Greeter</span> {
+  <span class="function">constructor</span>(<span class="keyword">public</span> <span class="property">greeting</span>: <span class="type">string</span>) {}
+  <span class="function">greet</span>() {
+    <span class="keyword">return</span> <span class="string">'Hello, '</span> + <span class="keyword">this</span>.greeting
+  }
+}
+
+<span class="comment">// 添加时间戳</span>
+<span class="keyword">function</span> <span class="function">AddTimestamp</span>&lt;<span class="type">T</span> <span class="keyword">extends</span> { <span class="keyword">new</span> (...<span class="property">args</span>: <span class="type">any</span>[]): {} }&gt;(<span class="property">constructor</span>: <span class="type">T</span>) {
+  <span class="keyword">return</span> <span class="keyword">class</span> <span class="keyword">extends</span> constructor {
+    <span class="property">createdAt</span> = <span class="keyword">new</span> <span class="type">Date</span>()
+  }
+}
+
+<span class="function">@AddTimestamp</span>
+<span class="keyword">class</span> <span class="type">User</span> {
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="function">constructor</span>(<span class="property">name</span>: <span class="type">string</span>) {
+    <span class="keyword">this</span>.name = name
+  }
+}
+
+<span class="keyword">const</span> user = <span class="keyword">new</span> <span class="type">User</span>(<span class="string">'Alice'</span>)
+console.<span class="function">log</span>(user.createdAt)  <span class="comment">// Date 对象</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="method" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">方法装饰器</h2>
+          <p class="section-subtitle">应用于方法的属性描述符</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">@MethodDecorator</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">方法装饰器 - 日志、缓存、重试</span>
+        </div>
+
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>参数</th>
+              <th>类型</th>
+              <th>说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline-code">target</code></td>
+              <td><code class="inline-code">Object</code></td>
+              <td>类的原型（实例方法）或构造函数（静态方法）</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">propertyKey</code></td>
+              <td><code class="inline-code">string</code></td>
+              <td>方法名</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">descriptor</code></td>
+              <td><code class="inline-code">PropertyDescriptor</code></td>
+              <td>方法的属性描述符</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">function</span> <span class="function">Log</span>(<span class="property">target</span>: <span class="type">Object</span>, <span class="property">propertyKey</span>: <span class="type">string</span>, <span class="property">descriptor</span>: <span class="type">PropertyDescriptor</span>) {
+  <span class="keyword">const</span> originalMethod = descriptor.value
+
+  descriptor.value = <span class="keyword">function</span> (...<span class="property">args</span>: <span class="type">any</span>[]) {
+    console.<span class="function">log</span>(<span class="string">`调用 </span>${propertyKey}<span class="string">`</span>)
+    console.<span class="function">log</span>(<span class="string">`参数: </span>${<span class="type">JSON</span>.<span class="function">stringify</span>(args)}<span class="string">`</span>)
+
+    <span class="keyword">const</span> result = originalMethod.<span class="function">apply</span>(<span class="keyword">this</span>, args)
+
+    console.<span class="function">log</span>(<span class="string">`结果: </span>${<span class="type">JSON</span>.<span class="function">stringify</span>(result)}<span class="string">`</span>)
+    <span class="keyword">return</span> result
+  }
+
+  <span class="keyword">return</span> descriptor
+}
+
+<span class="keyword">class</span> <span class="type">Calculator</span> {
+  <span class="function">@Log</span>
+  <span class="function">add</span>(<span class="property">x</span>: <span class="type">number</span>, <span class="property">y</span>: <span class="type">number</span>): <span class="type">number</span> {
+    <span class="keyword">return</span> x + y
+  }
+}
+
+<span class="keyword">const</span> calc = <span class="keyword">new</span> <span class="type">Calculator</span>()
+calc.<span class="function">add</span>(<span class="number">5</span>, <span class="number">3</span>)
+<span class="comment">// 调用 add</span>
+<span class="comment">// 参数: [5,3]</span>
+<span class="comment">// 结果: 8</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="accessor" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">访问器装饰器</h2>
+          <p class="section-subtitle">应用于 getter/setter</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">@AccessorDecorator</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">访问器装饰器 - 只读控制、验证</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">function</span> <span class="function">ReadOnly</span>(<span class="property">target</span>: <span class="type">any</span>, <span class="property">key</span>: <span class="type">string</span>, <span class="property">descriptor</span>: <span class="type">PropertyDescriptor</span>) {
+  descriptor.writable = <span class="keyword">false</span>
+  <span class="keyword">return</span> descriptor
+}
+
+<span class="keyword">class</span> <span class="type">Circle</span> {
+  <span class="keyword">private</span> <span class="property">_radius</span>: <span class="type">number</span>
+
+  <span class="function">constructor</span>(<span class="property">radius</span>: <span class="type">number</span>) {
+    <span class="keyword">this</span>._radius = radius
+  }
+
+  <span class="function">@ReadOnly</span>
+  <span class="keyword">get</span> <span class="function">radius</span>() {
+    <span class="keyword">return</span> <span class="keyword">this</span>._radius
+  }
+}
+
+<span class="keyword">const</span> circle = <span class="keyword">new</span> <span class="type">Circle</span>(<span class="number">10</span>)
+console.<span class="function">log</span>(circle.radius)  <span class="comment">// 10</span>
+<span class="comment">// circle.radius = 20  // ❌ 只读访问器</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="property" class="section">
+      <div class="section-header">
+        <div class="section-icon basics">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M4 7V4h16v3"/>
+            <path d="M9 20h6"/>
+            <path d="M12 4v16"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">属性装饰器</h2>
+          <p class="section-subtitle">应用于属性声明</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">@PropertyDecorator</span>
+          <span class="type-badge badge-common">常用</span>
+          <span class="type-translation">属性装饰器 - 验证、默认值</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">function</span> <span class="function">Validate</span>(<span class="property">target</span>: <span class="type">any</span>, <span class="property">propertyKey</span>: <span class="type">string</span>) {
+  <span class="keyword">let</span> value: <span class="type">any</span>
+
+  <span class="keyword">const</span> getter = () =&gt; value
+  <span class="keyword">const</span> setter = (<span class="property">newVal</span>: <span class="type">any</span>) =&gt; {
+    <span class="keyword">if</span> (<span class="keyword">typeof</span> newVal !== <span class="string">'string'</span>) {
+      <span class="keyword">throw new</span> <span class="type">TypeError</span>(<span class="string">`${propertyKey} 必须是字符串`</span>)
+    }
+    value = newVal
+  }
+
+  Object.<span class="function">defineProperty</span>(target, propertyKey, {
+    <span class="keyword">get</span>: getter,
+    <span class="keyword">set</span>: setter
+  })
+}
+
+<span class="keyword">class</span> <span class="type">User</span> {
+  <span class="function">@Validate</span>
+  <span class="property">name</span>: <span class="type">string</span>
+
+  <span class="function">constructor</span>(<span class="property">name</span>: <span class="type">string</span>) {
+    <span class="keyword">this</span>.name = name
+  }
+}
+
+<span class="keyword">const</span> user = <span class="keyword">new</span> <span class="type">User</span>(<span class="string">'Alice'</span>)  <span class="comment">// ✅</span>
+<span class="comment">// const user2 = new User(123)  // ❌ TypeError</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="parameter" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M16 18l6-6-6-6"/>
+            <path d="M8 6l-6 6 6 6"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">参数装饰器</h2>
+          <p class="section-subtitle">应用于方法参数</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">@ParameterDecorator</span>
+          <span class="type-badge badge-advanced">进阶</span>
+          <span class="type-translation">参数装饰器 - 必填参数、参数验证</span>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">function</span> <span class="function">Required</span>(<span class="property">target</span>: <span class="type">any</span>, <span class="property">propertyKey</span>: <span class="type">string</span>, <span class="property">parameterIndex</span>: <span class="type">number</span>) {
+  <span class="keyword">const</span> existingParameters = Reflect.<span class="function">getMetadata</span>(<span class="string">'required'</span>, target, propertyKey) || []
+  existingParameters.<span class="function">push</span>(parameterIndex)
+  Reflect.<span class="function">defineMetadata</span>(<span class="string">'required'</span>, existingParameters, target, propertyKey)
+}
+
+<span class="keyword">function</span> <span class="function">ValidateParams</span>(<span class="property">target</span>: <span class="type">any</span>, <span class="property">propertyKey</span>: <span class="type">string</span>, <span class="property">descriptor</span>: <span class="type">PropertyDescriptor</span>) {
+  <span class="keyword">const</span> originalMethod = descriptor.value
+
+  descriptor.value = <span class="keyword">function</span> (...<span class="property">args</span>: <span class="type">any</span>[]) {
+    <span class="keyword">const</span> requiredParameters = Reflect.<span class="function">getMetadata</span>(<span class="string">'required'</span>, target, propertyKey) || []
+
+    <span class="keyword">for</span> (<span class="keyword">const</span> paramIndex <span class="keyword">of</span> requiredParameters) {
+      <span class="keyword">if</span> (paramIndex &gt;= args.length || args[paramIndex] === <span class="type">undefined</span>) {
+        <span class="keyword">throw new</span> <span class="type">Error</span>(<span class="string">'缺少必填参数'</span>)
+      }
+    }
+
+    <span class="keyword">return</span> originalMethod.<span class="function">apply</span>(<span class="keyword">this</span>, args)
+  }
+
+  <span class="keyword">return</span> descriptor
+}
+
+<span class="keyword">class</span> <span class="type">UserService</span> {
+  <span class="function">@ValidateParams</span>
+  <span class="function">createUser</span>(<span class="function">@Required</span> <span class="property">name</span>: <span class="type">string</span>, <span class="function">@Required</span> <span class="property">email</span>: <span class="type">string</span>) {
+    <span class="keyword">return</span> { name, email }
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="factory" class="section">
+      <div class="section-header">
+        <div class="section-icon practice">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2v20"/>
+            <path d="M2 12h20"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">装饰器工厂</h2>
+          <p class="section-subtitle">返回装饰器的函数</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">decorator factory</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">装饰器工厂 - 传递参数</span>
+        </div>
+
+        <div class="mermaid-container">
+          <h4>装饰器工厂流程</h4>
+          <pre class="mermaid">
+flowchart LR
+    A["@Retry(3, 1000)"] --> B["Retry(3, 1000)"]
+            B --> C["返回装饰器函数"]
+            C --> D["装饰器函数执行"]
+          </pre>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="comment">// 基本装饰器工厂</span>
+<span class="keyword">function</span> <span class="function">Log</span>(<span class="property">method</span>: <span class="type">string</span>) {
+  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="property">target</span>: <span class="type">Object</span>, <span class="property">propertyKey</span>: <span class="type">string</span>, <span class="property">descriptor</span>: <span class="type">PropertyDescriptor</span>) {
+    <span class="keyword">const</span> originalMethod = descriptor.value
+
+    descriptor.value = <span class="keyword">function</span> (...<span class="property">args</span>: <span class="type">any</span>[]) {
+      console.<span class="function">log</span>(<span class="string">`[${method}] </span>${propertyKey}<span class="string">`</span>)
+      <span class="keyword">return</span> originalMethod.<span class="function">apply</span>(<span class="keyword">this</span>, args)
+    }
+
+    <span class="keyword">return</span> descriptor
+  }
+}
+
+<span class="comment">// 带参数的装饰器工厂</span>
+<span class="keyword">function</span> <span class="function">Throttle</span>(<span class="property">delay</span>: <span class="type">number</span>) {
+  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="property">target</span>: <span class="type">Object</span>, <span class="property">propertyKey</span>: <span class="type">string</span>, <span class="property">descriptor</span>: <span class="type">PropertyDescriptor</span>) {
+    <span class="keyword">const</span> originalMethod = descriptor.value
+    <span class="keyword">let</span> lastCall = <span class="number">0</span>
+
+    descriptor.value = <span class="keyword">function</span> (...<span class="property">args</span>: <span class="type">any</span>[]) {
+      <span class="keyword">const</span> now = Date.<span class="function">now</span>()
+      <span class="keyword">if</span> (now - lastCall &gt;= delay) {
+        lastCall = now
+        <span class="keyword">return</span> originalMethod.<span class="function">apply</span>(<span class="keyword">this</span>, args)
+      }
+    }
+
+    <span class="keyword">return</span> descriptor
+  }
+}
+
+<span class="keyword">class</span> <span class="type">SearchService</span> {
+  <span class="function">@Throttle</span>(<span class="number">300</span>)
+  <span class="function">search</span>(<span class="property">query</span>: <span class="type">string</span>) {
+    console.<span class="function">log</span>(<span class="string">`搜索: </span>${query}<span class="string">`</span>)
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="composition" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 2a10 10 0 0 1 0 20"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">装饰器组合</h2>
+          <p class="section-subtitle">多个装饰器应用</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">@A() @B()</span>
+          <span class="type-badge badge-advanced">进阶</span>
+          <span class="type-translation">装饰器组合 - 从下到上执行</span>
+        </div>
+
+        <div class="mermaid-container">
+          <h4>装饰器执行顺序</h4>
+          <pre class="mermaid">
+flowchart TD
+    A["@A() 工厂执行"] --> B["@B() 工厂执行"]
+    B --> C["@B() 装饰器执行"]
+    C --> D["@A() 装饰器执行"]
+          </pre>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">示例代码</span>
+          <pre><code><span class="keyword">function</span> <span class="function">A</span>() {
+  console.<span class="function">log</span>(<span class="string">'A: 工厂执行'</span>)
+  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="property">target</span>: <span class="type">any</span>) {
+    console.<span class="function">log</span>(<span class="string">'A: 装饰器执行'</span>)
+  }
+}
+
+<span class="keyword">function</span> <span class="function">B</span>() {
+  console.<span class="function">log</span>(<span class="string">'B: 工厂执行'</span>)
+  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="property">target</span>: <span class="type">any</span>) {
+    console.<span class="function">log</span>(<span class="string">'B: 装饰器执行'</span>)
+  }
+}
+
+<span class="function">@A</span>()
+<span class="function">@B</span>()
+<span class="keyword">class</span> <span class="type">MyClass</span> {}
+
+<span class="comment">// 输出：</span>
+<span class="comment">// A: 工厂执行</span>
+<span class="comment">// B: 工厂执行</span>
+<span class="comment">// B: 装饰器执行</span>
+<span class="comment">// A: 装饰器执行</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="cases" class="section">
+      <div class="section-header">
+        <div class="section-icon practice">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+            <path d="M13 2v7h7"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">实战案例</h2>
+          <p class="section-subtitle">真实场景中的应用</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 1：日志装饰器</span>
+          <span class="type-badge badge-common">常用</span>
+        </div>
+
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">function</span> <span class="function">Log</span>(<span class="property">target</span>: <span class="type">Object</span>, <span class="property">propertyKey</span>: <span class="type">string</span>, <span class="property">descriptor</span>: <span class="type">PropertyDescriptor</span>) {
+  <span class="keyword">const</span> originalMethod = descriptor.value
+
+  descriptor.value = <span class="keyword">function</span> (...<span class="property">args</span>: <span class="type">any</span>[]) {
+    <span class="keyword">const</span> startTime = performance.<span class="function">now</span>()
+
+    console.<span class="function">log</span>(<span class="string">`[调用] </span>${propertyKey}<span class="string">`</span>)
+    console.<span class="function">log</span>(<span class="string">`  入参：`</span>, <span class="type">JSON</span>.<span class="function">stringify</span>(args))
+
+    <span class="keyword">const</span> result = originalMethod.<span class="function">apply</span>(<span class="keyword">this</span>, args)
+
+    <span class="keyword">const</span> endTime = performance.<span class="function">now</span>()
+    console.<span class="function">log</span>(<span class="string">`  出参：`</span>, <span class="type">JSON</span>.<span class="function">stringify</span>(result))
+    console.<span class="function">log</span>(<span class="string">`  耗时：</span>${(endTime - startTime).<span class="function">toFixed</span>(<span class="number">4</span>)}<span class="string"> ms`</span>)
+
+    <span class="keyword">return</span> result
+  }
+
+  <span class="keyword">return</span> descriptor
+}
+
+<span class="keyword">class</span> <span class="type">UserService</span> {
+  <span class="function">@Log</span>
+  <span class="function">getUserById</span>(<span class="property">id</span>: <span class="type">number</span>): <span class="type">object</span> {
+    <span class="keyword">return</span> { id, <span class="property">name</span>: <span class="string">`User</span>${id}<span class="string">`</span> }
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 2：缓存装饰器</span>
+          <span class="type-badge badge-common">常用</span>
+        </div>
+
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">function</span> <span class="function">Cache</span>(<span class="property">ttl</span>: <span class="type">number</span> = <span class="number">60000</span>) {
+  <span class="keyword">const</span> cache = <span class="keyword">new</span> <span class="type">Map</span>&lt;<span class="type">string</span>, { <span class="property">value</span>: <span class="type">any</span>; <span class="property">expiry</span>: <span class="type">number</span> }&gt;()
+
+  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="property">target</span>: <span class="type">Object</span>, <span class="property">propertyKey</span>: <span class="type">string</span>, <span class="property">descriptor</span>: <span class="type">PropertyDescriptor</span>) {
+    <span class="keyword">const</span> originalMethod = descriptor.value
+
+    descriptor.value = <span class="keyword">function</span> (...<span class="property">args</span>: <span class="type">any</span>[]) {
+      <span class="keyword">const</span> key = <span class="string">`</span>${propertyKey}<span class="string">:</span>${<span class="type">JSON</span>.<span class="function">stringify</span>(args)}<span class="string">`</span>
+      <span class="keyword">const</span> cached = cache.<span class="function">get</span>(key)
+
+      <span class="keyword">if</span> (cached &amp;&amp; Date.<span class="function">now</span>() &lt; cached.expiry) {
+        console.<span class="function">log</span>(<span class="string">`[Cache] 命中缓存: </span>${propertyKey}<span class="string">`</span>)
+        <span class="keyword">return</span> cached.value
+      }
+
+      <span class="keyword">const</span> result = originalMethod.<span class="function">apply</span>(<span class="keyword">this</span>, args)
+      cache.<span class="function">set</span>(key, { value: result, <span class="property">expiry</span>: Date.<span class="function">now</span>() + ttl })
+
+      console.<span class="function">log</span>(<span class="string">`[Cache] 设置缓存: </span>${propertyKey}<span class="string">`</span>)
+      <span class="keyword">return</span> result
+    }
+
+    <span class="keyword">return</span> descriptor
+  }
+}
+
+<span class="keyword">class</span> <span class="type">ProductService</span> {
+  <span class="function">@Cache</span>(<span class="number">30000</span>)
+  <span class="function">getProduct</span>(<span class="property">id</span>: <span class="type">number</span>) {
+    console.<span class="function">log</span>(<span class="string">`从数据库查询产品 </span>${id}<span class="string">`</span>)
+    <span class="keyword">return</span> { id, <span class="property">name</span>: <span class="string">'Product'</span> }
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 3：重试装饰器</span>
+          <span class="type-badge badge-common">常用</span>
+        </div>
+
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">function</span> <span class="function">Retry</span>(<span class="property">maxRetries</span>: <span class="type">number</span> = <span class="number">3</span>, <span class="property">delay</span>: <span class="type">number</span> = <span class="number">1000</span>) {
+  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="property">target</span>: <span class="type">Object</span>, <span class="property">propertyKey</span>: <span class="type">string</span>, <span class="property">descriptor</span>: <span class="type">PropertyDescriptor</span>) {
+    <span class="keyword">const</span> originalMethod = descriptor.value
+
+    descriptor.value = <span class="keyword">async function</span> (...<span class="property">args</span>: <span class="type">any</span>[]) {
+      <span class="keyword">let</span> lastError: <span class="type">Error</span>
+
+      <span class="keyword">for</span> (<span class="keyword">let</span> attempt = <span class="number">1</span>; attempt &lt;= maxRetries; attempt++) {
+        <span class="keyword">try</span> {
+          <span class="keyword">return await</span> originalMethod.<span class="function">apply</span>(<span class="keyword">this</span>, args)
+        } <span class="keyword">catch</span> (error) {
+          lastError = error <span class="keyword">as</span> <span class="type">Error</span>
+          console.<span class="function">log</span>(<span class="string">`[Retry] 第 </span>${attempt}<span class="string"> 次尝试失败`</span>)
+
+          <span class="keyword">if</span> (attempt &lt; maxRetries) {
+            <span class="keyword">await new</span> <span class="type">Promise</span>(<span class="property">resolve</span> =&gt; <span class="function">setTimeout</span>(resolve, delay))
+          }
+        }
+      }
+
+      <span class="keyword">throw</span> lastError!
+    }
+
+    <span class="keyword">return</span> descriptor
+  }
+}
+
+<span class="keyword">class</span> <span class="type">ApiClient</span> {
+  <span class="function">@Retry</span>(<span class="number">3</span>, <span class="number">1000</span>)
+  <span class="keyword">async</span> <span class="function">fetchData</span>(<span class="property">url</span>: <span class="type">string</span>) {
+    <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="function">fetch</span>(url)
+    <span class="keyword">return</span> response.<span class="function">json</span>()
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 4：权限装饰器</span>
+          <span class="type-badge badge-advanced">进阶</span>
+        </div>
+
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">const</span> PERMISSION_KEY = Symbol(<span class="string">'permission'</span>)
+
+<span class="keyword">function</span> <span class="function">RequirePermission</span>(<span class="property">permission</span>: <span class="type">string</span>) {
+  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="property">target</span>: <span class="type">Object</span>, <span class="property">propertyKey</span>: <span class="type">string</span>, <span class="property">descriptor</span>: <span class="type">PropertyDescriptor</span>) {
+    Reflect.<span class="function">defineMetadata</span>(PERMISSION_KEY, permission, target, propertyKey)
+    <span class="keyword">return</span> descriptor
+  }
+}
+
+<span class="keyword">function</span> <span class="function">CheckPermission</span>(<span class="property">target</span>: <span class="type">Object</span>, <span class="property">propertyKey</span>: <span class="type">string</span>, <span class="property">descriptor</span>: <span class="type">PropertyDescriptor</span>) {
+  <span class="keyword">const</span> originalMethod = descriptor.value
+
+  descriptor.value = <span class="keyword">function</span> (...<span class="property">args</span>: <span class="type">any</span>[]) {
+    <span class="keyword">const</span> requiredPermission = Reflect.<span class="function">getMetadata</span>(PERMISSION_KEY, target, propertyKey)
+
+    <span class="keyword">if</span> (requiredPermission) {
+      <span class="keyword">const</span> userPermissions = [<span class="string">'read'</span>, <span class="string">'write'</span>]
+      <span class="keyword">if</span> (!userPermissions.<span class="function">includes</span>(requiredPermission)) {
+        <span class="keyword">throw new</span> <span class="type">Error</span>(<span class="string">`需要权限: </span>${requiredPermission}<span class="string">`</span>)
+      }
+    }
+
+    <span class="keyword">return</span> originalMethod.<span class="function">apply</span>(<span class="keyword">this</span>, args)
+  }
+
+  <span class="keyword">return</span> descriptor
+}
+
+<span class="keyword">class</span> <span class="type">Document</span> {
+  <span class="function">@RequirePermission</span>(<span class="string">'read'</span>)
+  <span class="function">@CheckPermission</span>
+  <span class="function">view</span>() { <span class="keyword">return</span> <span class="string">'查看文档'</span> }
+
+  <span class="function">@RequirePermission</span>(<span class="string">'write'</span>)
+  <span class="function">@CheckPermission</span>
+  <span class="function">edit</span>() { <span class="keyword">return</span> <span class="string">'编辑文档'</span> }
+
+  <span class="function">@RequirePermission</span>(<span class="string">'admin'</span>)
+  <span class="function">@CheckPermission</span>
+  <span class="function">delete</span>() { <span class="keyword">return</span> <span class="string">'删除文档'</span> }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 5：验证装饰器</span>
+          <span class="type-badge badge-common">常用</span>
+        </div>
+
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">function</span> <span class="function">ValidateEmail</span>(<span class="property">target</span>: <span class="type">any</span>, <span class="property">propertyKey</span>: <span class="type">string</span>) {
+  <span class="keyword">let</span> value: <span class="type">string</span>
+
+  <span class="keyword">const</span> getter = () =&gt; value
+  <span class="keyword">const</span> setter = (<span class="property">newVal</span>: <span class="type">string</span>) =&gt; {
+    <span class="keyword">if</span> (!newVal.<span class="function">includes</span>(<span class="string">'@'</span>)) {
+      <span class="keyword">throw new</span> <span class="type">TypeError</span>(<span class="string">'邮箱格式不正确'</span>)
+    }
+    value = newVal
+  }
+
+  Object.<span class="function">defineProperty</span>(target, propertyKey, { <span class="keyword">get</span>: getter, <span class="keyword">set</span>: setter })
+}
+
+<span class="keyword">function</span> <span class="function">ValidateRange</span>(<span class="property">min</span>: <span class="type">number</span>, <span class="property">max</span>: <span class="type">number</span>) {
+  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="property">target</span>: <span class="type">any</span>, <span class="property">propertyKey</span>: <span class="type">string</span>) {
+    <span class="keyword">let</span> value: <span class="type">number</span>
+
+    <span class="keyword">const</span> getter = () =&gt; value
+    <span class="keyword">const</span> setter = (<span class="property">newVal</span>: <span class="type">number</span>) =&gt; {
+      <span class="keyword">if</span> (newVal &lt; min || newVal &gt; max) {
+        <span class="keyword">throw new</span> <span class="type">TypeError</span>(<span class="string">`${propertyKey} 必须在 </span>${min}<span class="string"> 和 </span>${max}<span class="string"> 之间`</span>)
+      }
+      value = newVal
+    }
+
+    Object.<span class="function">defineProperty</span>(target, propertyKey, { <span class="keyword">get</span>: getter, <span class="keyword">set</span>: setter })
+  }
+}
+
+<span class="keyword">class</span> <span class="type">User</span> {
+  <span class="function">@ValidateEmail</span>
+  <span class="property">email</span>: <span class="type">string</span>
+
+  <span class="function">@ValidateRange</span>(<span class="number">0</span>, <span class="number">150</span>)
+  <span class="property">age</span>: <span class="type">number</span>
+
+  <span class="function">constructor</span>(<span class="property">email</span>: <span class="type">string</span>, <span class="property">age</span>: <span class="type">number</span>) {
+    <span class="keyword">this</span>.email = email
+    <span class="keyword">this</span>.age = age
+  }
+}
+
+<span class="keyword">const</span> user = <span class="keyword">new</span> <span class="type">User</span>(<span class="string">'alice@example.com'</span>, <span class="number">25</span>)  <span class="comment">// ✅</span>
+<span class="comment">// const user2 = new User('invalid', 25)  // ❌ TypeError</span></code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>TypeScript 装饰器（Decorators）完全指南</p>
+    <p style="margin-top: 0.5rem;">TypeScript 最强大的元编程特性</p>
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#f59e0b',
+        primaryTextColor: '#e6edf3',
+        primaryBorderColor: '#fbbf24',
+        lineColor: '#8b949e',
+        secondaryColor: '#161b22',
+        tertiaryColor: '#0d1117'
+      }
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.type-card, .mermaid-container').forEach(el => {
+      el.classList.add('animate-on-scroll');
+      observer.observe(el);
+    });
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(link.getAttribute('href').substring(1));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>

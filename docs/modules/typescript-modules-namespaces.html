@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeScript 模块与命名空间完全指南</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #3178c6;
+      --primary-light: #519aba;
+      --primary-dark: #235a97;
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-code: #1c2128;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --success: #3fb950;
+      --error: #f85149;
+      --warning: #d29922;
+      --lime: #84cc16;
+      --emerald: #10b981;
+      --teal: #14b8a6;
+      --gradient-1: linear-gradient(135deg, #84cc16, #10b981);
+      --gradient-2: linear-gradient(135deg, #14b8a6, #06b6d4);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 20%, rgba(132, 204, 22, 0.15), transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(16, 185, 129, 0.1), transparent 50%),
+                  var(--bg);
+      padding: 2rem;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(132, 204, 22, 0.3) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      background: rgba(132, 204, 22, 0.2);
+      border: 1px solid var(--lime);
+      border-radius: 50px;
+      font-size: 0.9rem;
+      color: var(--lime);
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--lime));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s ease 0.1s both;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 3rem;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .stat-item { text-align: center; }
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 0.9rem; color: var(--text-muted); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-inner::-webkit-scrollbar { display: none; }
+
+    .nav-link {
+      white-space: nowrap;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(132, 204, 22, 0.2);
+      color: var(--lime);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    .section { margin-bottom: 6rem; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .section-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+
+    .section-icon.basics { background: var(--gradient-1); }
+    .section-icon.advanced { background: var(--gradient-2); }
+    .section-icon.practice { background: linear-gradient(135deg, #f97316, #ef4444); }
+
+    .section-title { font-size: 2rem; font-weight: 700; }
+    .section-subtitle { color: var(--text-muted); font-size: 1rem; }
+
+    .type-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .type-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--gradient-1);
+      border-radius: 4px 0 0 4px;
+    }
+
+    .type-card:hover {
+      border-color: var(--lime);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(132, 204, 22, 0.2);
+    }
+
+    .type-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .type-name {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--lime);
+    }
+
+    .type-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-core { background: rgba(132, 204, 22, 0.2); color: var(--lime); border: 1px solid var(--lime); }
+    .badge-common { background: rgba(16, 185, 129, 0.2); color: var(--emerald); border: 1px solid var(--emerald); }
+    .badge-advanced { background: rgba(20, 184, 166, 0.2); color: var(--teal); border: 1px solid var(--teal); }
+
+    .type-translation { color: var(--text-muted); font-size: 0.95rem; }
+    .type-description { margin-bottom: 1.5rem; color: var(--text); line-height: 1.8; }
+
+    .code-wrapper { position: relative; margin: 1.5rem 0; }
+
+    .code-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 0.4rem 1rem;
+      background: var(--lime);
+      color: #000;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 0 0 8px 0;
+      z-index: 1;
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      padding-top: 2.5rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    code { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+    .inline-code {
+      background: rgba(132, 204, 22, 0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--lime);
+    }
+
+    .keyword { color: #ff7b72; }
+    .type { color: #79c0ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .function { color: #d2a8ff; }
+    .property { color: #e6edf3; }
+
+    .mermaid-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 2rem 0;
+      text-align: center;
+    }
+
+    .mermaid-container h4 {
+      margin-bottom: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .visual-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      padding: 2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+
+    .diagram-box {
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+      min-width: 150px;
+    }
+
+    .diagram-box.input { background: rgba(132, 204, 22, 0.2); border: 2px solid var(--lime); }
+    .diagram-box.output { background: rgba(16, 185, 129, 0.2); border: 2px solid var(--success); }
+    .diagram-box.comparison { background: rgba(20, 184, 166, 0.2); border: 2px solid var(--teal); }
+
+    .diagram-arrow { font-size: 1.5rem; color: var(--text-muted); font-weight: 600; }
+    .diagram-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .diagram-value { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.9rem; }
+
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .api-table th {
+      background: var(--lime);
+      color: #000;
+      padding: 1rem 1.5rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .api-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .api-table tr:last-child td { border-bottom: none; }
+    .api-table tr:hover td { background: rgba(132, 204, 22, 0.1); }
+
+    .footer {
+      text-align: center;
+      padding: 4rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .hero-stats { gap: 2rem; }
+      .stat-number { font-size: 2rem; }
+      .section-header { flex-direction: column; text-align: center; }
+      .visual-diagram { flex-direction: column; }
+      .diagram-arrow { transform: rotate(90deg); }
+    }
+
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">TypeScript 代码组织</span>
+      <h1>模块与命名空间完全指南</h1>
+      <p>模块（Modules）和命名空间（Namespaces）是组织代码的两种方式。模块是现代 JavaScript 的标准，命名空间用于声明合并和全局扩展。</p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">2</div>
+          <div class="stat-label">组织方式</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">5</div>
+          <div class="stat-label">声明类型</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">4</div>
+          <div class="stat-label">实战案例</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#overview" class="nav-link">总览对比</a>
+      <a href="#es" class="nav-link">ES 模块</a>
+      <a href="#cjs" class="nav-link">CommonJS</a>
+      <a href="#export" class="nav-link">导出方式</a>
+      <a href="#reexport" class="nav-link">重新导出</a>
+      <a href="#namespace" class="nav-link">命名空间</a>
+      <a href="#merging" class="nav-link">命名空间合并</a>
+      <a href="#declare" class="nav-link">环境声明</a>
+      <a href="#dts" class="nav-link">声明文件</a>
+      <a href="#resolution" class="nav-link">模块解析</a>
+      <a href="#cases" class="nav-link">实战案例</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section id="overview" class="section">
+      <div class="section-header">
+        <div class="section-icon basics">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+            <rect x="9" y="3" width="6" height="4" rx="1"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">模块 vs 命名空间</h2>
+          <p class="section-subtitle">如何选择</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Modules vs Namespaces</span>
+        </div>
+
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>特性</th>
+              <th>模块</th>
+              <th>命名空间</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>标准</td>
+              <td>ES 标准</td>
+              <td>TypeScript 独有</td>
+            </tr>
+            <tr>
+              <td>运行时</td>
+              <td>真正的模块系统</td>
+              <td>编译后合并到全局</td>
+            </tr>
+            <tr>
+              <td>适用场景</td>
+              <td>所有场景</td>
+              <td>声明合并、全局扩展</td>
+            </tr>
+            <tr>
+              <td>推荐度</td>
+              <td>✅ 推荐</td>
+              <td>⚠️ 特定场景</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="visual-diagram">
+          <div class="diagram-box output">
+            <div class="diagram-label">✅ 模块（推荐）</div>
+            <div class="diagram-value">export / import</div>
+          </div>
+          <div class="diagram-arrow">vs</div>
+          <div class="diagram-box comparison">
+            <div class="diagram-label">⚠️ 命名空间</div>
+            <div class="diagram-value">namespace {}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="es" class="section">
+      <div class="section-header">
+        <div class="section-icon basics">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">ES 模块</h2>
+          <p class="section-subtitle">现代 JavaScript 模块标准</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">export / import</span>
+          <span class="type-badge badge-core">核心</span>
+          <span class="type-translation">ES 模块 - 推荐使用</span>
+        </div>
+
+        <div class="mermaid-container">
+          <h4>ES 模块流程</h4>
+          <pre class="mermaid">
+flowchart LR
+    A["math.ts<br/>export const PI<br/>export function add"] --> B["app.ts<br/>import { PI, add }<br/>from './math'"]
+          </pre>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">导出</span>
+          <pre><code><span class="comment">// math.ts</span>
+<span class="keyword">export</span> <span class="keyword">const</span> PI = <span class="number">3.14159</span>
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">add</span>(<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>): <span class="type">number</span> {
+  <span class="keyword">return</span> a + b
+}
+
+<span class="keyword">export</span> <span class="keyword">interface</span> <span class="type">Point</span> {
+  <span class="property">x</span>: <span class="type">number</span>
+  <span class="property">y</span>: <span class="type">number</span>
+}</code></pre>
+        </div>
+
+        <div class="code-wrapper">
+          <span class="code-label">导入</span>
+          <pre><code><span class="comment">// app.ts</span>
+<span class="keyword">import</span> { PI, add, Point } <span class="keyword">from</span> <span class="string">'./math'</span>
+
+console.<span class="function">log</span>(PI)
+console.<span class="function">log</span>(<span class="function">add</span>(<span class="number">1</span>, <span class="number">2</span>))
+
+<span class="comment">// 导入全部</span>
+<span class="keyword">import</span> * <span class="keyword">as</span> Math <span class="keyword">from</span> <span class="string">'./math'</span>
+console.<span class="function">log</span>(Math.PI)
+
+<span class="comment">// 重命名导入</span>
+<span class="keyword">import</span> { add <span class="keyword">as</span> sum } <span class="keyword">from</span> <span class="string">'./math'</span>
+console.<span class="function">log</span>(<span class="function">sum</span>(<span class="number">1</span>, <span class="number">2</span>))</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="cjs" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2v20"/>
+            <path d="M2 12h20"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">CommonJS 模块</h2>
+          <p class="section-subtitle">Node.js 模块系统</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">require / module.exports</span>
+          <span class="type-badge badge-common">常用</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 配置 module: "commonjs"</span>
+<span class="comment">// TypeScript 自动转换 import/export 为 require/exports</span>
+
+<span class="comment">// TypeScript 写法</span>
+<span class="keyword">import</span> { add } <span class="keyword">from</span> <span class="string">'./math'</span>
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">add</span>(<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>) { <span class="keyword">return</span> a + b }
+
+<span class="comment">// 编译后的 JavaScript</span>
+<span class="keyword">const</span> { add } = <span class="function">require</span>(<span class="string">'./math'</span>)
+<span class="keyword">function</span> <span class="function">add</span>(<span class="property">a</span>, <span class="property">b</span>) { <span class="keyword">return</span> a + b }
+<span class="keyword">module</span>.exports = { add }</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="export" class="section">
+      <div class="section-header">
+        <div class="section-icon basics">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M16 18l6-6-6-6"/>
+            <path d="M8 6l-6 6 6 6"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">默认导出与具名导出</h2>
+          <p class="section-subtitle">两种导出方式</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">export default / export { }</span>
+          <span class="type-badge badge-core">核心</span>
+        </div>
+        <div class="visual-diagram">
+          <div class="diagram-box input">
+            <div class="diagram-label">默认导出</div>
+            <div class="diagram-value">export default class Logger</div>
+          </div>
+          <div class="diagram-arrow">vs</div>
+          <div class="diagram-box output">
+            <div class="diagram-label">具名导出</div>
+            <div class="diagram-value">export function add()</div>
+          </div>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 默认导出</span>
+<span class="keyword">export default</span> <span class="keyword">class</span> <span class="type">Logger</span> {
+  <span class="function">log</span>(<span class="property">message</span>: <span class="type">string</span>) {
+    console.<span class="function">log</span>(message)
+  }
+}
+
+<span class="comment">// 默认导出函数</span>
+<span class="keyword">export default</span> <span class="keyword">function</span> <span class="function">greet</span>(<span class="property">name</span>: <span class="type">string</span>): <span class="type">string</span> {
+  <span class="keyword">return</span> <span class="string">`Hello, ${</span>name<span class="string">}`</span>
+}
+
+<span class="comment">// 导入</span>
+<span class="keyword">import</span> Logger <span class="keyword">from</span> <span class="string">'./logger'</span>
+<span class="keyword">import</span> greet <span class="keyword">from</span> <span class="string">'./utils'</span>
+
+<span class="comment">// 混合导出</span>
+<span class="keyword">export default</span> <span class="keyword">class</span> <span class="type">Utils</span> {
+  <span class="keyword">static</span> <span class="function">format</span>(<span class="property">date</span>: <span class="type">Date</span>): <span class="type">string</span> {
+    <span class="keyword">return</span> date.<span class="function">toISOString</span>()
+  }
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">sleep</span>(<span class="property">ms</span>: <span class="type">number</span>): <span class="type">Promise</span>&lt;<span class="type">void</span>&gt; {
+  <span class="keyword">return new</span> <span class="type">Promise</span>(<span class="property">resolve</span> =&gt; <span class="function">setTimeout</span>(resolve, ms))
+}
+
+<span class="comment">// 导入</span>
+<span class="keyword">import</span> Utils, { sleep } <span class="keyword">from</span> <span class="string">'./utils'</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="reexport" class="section">
+      <div class="section-header">
+        <div class="section-icon practice">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">重新导出（Re-export）</h2>
+          <p class="section-subtitle">统一导出入口</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">export * from</span>
+          <span class="type-badge badge-core">核心</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// index.ts（统一导出入口）</span>
+<span class="keyword">export</span> * <span class="keyword">from</span> <span class="string">'./math'</span>
+<span class="keyword">export</span> * <span class="keyword">from</span> <span class="string">'./logger'</span>
+<span class="keyword">export</span> * <span class="keyword">from</span> <span class="string">'./utils'</span>
+
+<span class="comment">// 重新导出指定</span>
+<span class="keyword">export</span> { add, multiply } <span class="keyword">from</span> <span class="string">'./math'</span>
+<span class="keyword">export</span> { <span class="keyword">default</span> <span class="keyword">as</span> Logger } <span class="keyword">from</span> <span class="string">'./logger'</span>
+
+<span class="comment">// 重命名重新导出</span>
+<span class="keyword">export</span> { add <span class="keyword">as</span> sum } <span class="keyword">from</span> <span class="string">'./math'</span>
+
+<span class="comment">// 使用</span>
+<span class="keyword">import</span> { add, Logger } <span class="keyword">from</span> <span class="string">'./'</span>  <span class="comment">// 从 index.ts</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="namespace" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18"/>
+            <path d="M9 21V9"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">命名空间（Namespace）</h2>
+          <p class="section-subtitle">组织相关声明</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">namespace</span>
+          <span class="type-badge badge-advanced">进阶</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">namespace</span> <span class="type">Validation</span> {
+  <span class="keyword">export</span> <span class="keyword">interface</span> <span class="type">Validator</span> {
+    <span class="function">validate</span>(<span class="property">value</span>: <span class="type">string</span>): <span class="type">boolean</span>
+  }
+
+  <span class="keyword">export</span> <span class="keyword">class</span> <span class="type">EmailValidator</span> <span class="keyword">implements</span> <span class="type">Validator</span> {
+    <span class="function">validate</span>(<span class="property">value</span>: <span class="type">string</span>): <span class="type">boolean</span> {
+      <span class="keyword">return</span> value.<span class="function">includes</span>(<span class="string">'@'</span>)
+    }
+  }
+
+  <span class="keyword">export</span> <span class="keyword">class</span> <span class="type">PhoneValidator</span> <span class="keyword">implements</span> <span class="type">Validator</span> {
+    <span class="function">validate</span>(<span class="property">value</span>: <span class="type">string</span>): <span class="type">boolean</span> {
+      <span class="keyword">return</span> <span class="string">/^\d{11}$/</span>.<span class="function">test</span>(value)
+    }
+  }
+}
+
+<span class="comment">// 使用</span>
+<span class="keyword">const</span> emailValidator = <span class="keyword">new</span> <span class="type">Validation</span>.<span class="type">EmailValidator</span>()
+console.<span class="function">log</span>(emailValidator.<span class="function">validate</span>(<span class="string">'test@example.com'</span>))  <span class="comment">// true</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="merging" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">命名空间合并</h2>
+          <p class="section-subtitle">声明合并</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">Declaration Merging</span>
+          <span class="type-badge badge-advanced">进阶</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 类与命名空间合并</span>
+<span class="keyword">class</span> <span class="type">Greeter</span> {
+  <span class="property">greeting</span>: <span class="type">string</span>
+  <span class="function">constructor</span>(<span class="property">message</span>: <span class="type">string</span>) {
+    <span class="keyword">this</span>.greeting = message
+  }
+}
+
+<span class="keyword">namespace</span> <span class="type">Greeter</span> {
+  <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">create</span>(<span class="property">name</span>: <span class="type">string</span>): <span class="type">Greeter</span> {
+    <span class="keyword">return new</span> <span class="type">Greeter</span>(<span class="string">`Hello, ${</span>name<span class="string">}`</span>)
+  }
+}
+
+<span class="comment">// 使用</span>
+<span class="keyword">const</span> greeter = <span class="type">Greeter</span>.<span class="function">create</span>(<span class="string">'Alice'</span>)
+
+<span class="comment">// 函数与命名空间合并</span>
+<span class="keyword">function</span> <span class="function">buildLabel</span>(<span class="property">name</span>: <span class="type">string</span>): <span class="type">string</span> {
+  <span class="keyword">return</span> <span class="string">`Label: ${</span>name<span class="string">}`</span>
+}
+
+<span class="keyword">namespace</span> <span class="type">buildLabel</span> {
+  <span class="keyword">export</span> <span class="keyword">let</span> count = <span class="number">0</span>
+}
+
+buildLabel.count++  <span class="comment">// 合并后可以访问</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="declare" class="section">
+      <div class="section-header">
+        <div class="section-icon basics">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">环境声明（declare）</h2>
+          <p class="section-subtitle">为 JS 代码添加类型</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">declare var/function/class/module/namespace</span>
+          <span class="type-badge badge-core">核心</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// declare const/let/var</span>
+<span class="keyword">declare</span> <span class="keyword">const</span> API_URL: <span class="type">string</span>
+<span class="keyword">declare</span> <span class="keyword">let</span> cache: <span class="type">Map</span>&lt;<span class="type">string</span>, <span class="type">any</span>&gt;
+
+<span class="comment">// declare function</span>
+<span class="keyword">declare</span> <span class="keyword">function</span> <span class="function">fetch</span>(<span class="property">url</span>: <span class="type">string</span>): <span class="type">Promise</span>&lt;<span class="type">Response</span>&gt;
+<span class="keyword">declare</span> <span class="keyword">function</span> <span class="function">setTimeout</span>(<span class="property">callback</span>: () =&gt; <span class="type">void</span>, <span class="property">ms</span>: <span class="type">number</span>): <span class="type">number</span>
+
+<span class="comment">// declare class</span>
+<span class="keyword">declare</span> <span class="keyword">class</span> <span class="type">EventEmitter</span> {
+  <span class="function">on</span>(<span class="property">event</span>: <span class="type">string</span>, <span class="property">callback</span>: () =&gt; <span class="type">void</span>): <span class="type">void</span>
+  <span class="function">emit</span>(<span class="property">event</span>: <span class="type">string</span>): <span class="type">void</span>
+}
+
+<span class="comment">// declare module</span>
+<span class="keyword">declare</span> <span class="keyword">module</span> <span class="string">'some-module'</span> {
+  <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">doSomething</span>(): <span class="type">void</span>
+  <span class="keyword">export</span> <span class="keyword">const</span> version: <span class="type">string</span>
+}
+
+<span class="comment">// declare namespace</span>
+<span class="keyword">declare</span> <span class="keyword">namespace</span> <span class="type">Express</span> {
+  <span class="keyword">interface</span> <span class="type">Request</span> {
+    <span class="property">body</span>: <span class="type">any</span>
+  }
+  <span class="keyword">interface</span> <span class="type">Response</span> {
+    <span class="function">json</span>(<span class="property">data</span>: <span class="type">any</span>): <span class="type">void</span>
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="dts" class="section">
+      <div class="section-header">
+        <div class="section-icon practice">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <path d="M14 2v6h6"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">声明文件（.d.ts）</h2>
+          <p class="section-subtitle">类型定义文件</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">.d.ts</span>
+          <span class="type-badge badge-core">核心</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// globals.d.ts - 全局类型</span>
+<span class="keyword">declare</span> <span class="keyword">const</span> APP_NAME: <span class="type">string</span>
+<span class="keyword">declare</span> <span class="keyword">function</span> <span class="function">debug</span>(<span class="property">message</span>: <span class="type">string</span>): <span class="type">void</span>
+
+<span class="comment">// types/custom.d.ts - 模块声明</span>
+<span class="keyword">declare</span> <span class="keyword">module</span> <span class="string">'custom-module'</span> {
+  <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">doSomething</span>(): <span class="type">void</span>
+  <span class="keyword">export</span> <span class="keyword">interface</span> <span class="type">Config</span> {
+    <span class="property">debug</span>: <span class="type">boolean</span>
+    <span class="property">port</span>: <span class="type">number</span>
+  }
+}
+
+<span class="comment">// types/express.d.ts - 扩展已有类型</span>
+<span class="keyword">import</span> { Request, Response } <span class="keyword">from</span> <span class="string">'express'</span>
+
+<span class="keyword">declare</span> <span class="keyword">module</span> <span class="string">'express'</span> {
+  <span class="keyword">interface</span> <span class="type">Request</span> {
+    <span class="property">user</span>?: {
+      <span class="property">id</span>: <span class="type">number</span>
+      <span class="property">name</span>: <span class="type">string</span>
+    }
+  }
+}
+
+<span class="comment">// tsconfig.json 配置</span>
+<span class="comment">// "typeRoots": ["./@types"]</span>
+<span class="comment">// "types": ["node", "jest"]</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="resolution" class="section">
+      <div class="section-header">
+        <div class="section-icon advanced">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">模块解析</h2>
+          <p class="section-subtitle">路径解析策略</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">moduleResolution / paths</span>
+          <span class="type-badge badge-common">常用</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// tsconfig.json</span>
+{
+  <span class="property">"compilerOptions"</span>: {
+    <span class="property">"moduleResolution"</span>: <span class="string">"node"</span>,
+    <span class="property">"baseUrl"</span>: <span class="string">"."</span>,
+    <span class="property">"paths"</span>: {
+      <span class="property">"@/*"</span>: [<span class="string">"src/*"</span>],
+      <span class="property">"@utils/*"</span>: [<span class="string">"src/utils/*"</span>]
+    }
+  }
+}
+
+<span class="comment">// 使用路径映射</span>
+<span class="keyword">import</span> { add } <span class="keyword">from</span> <span class="string">'@/utils/math'</span>
+<span class="keyword">import</span> { Logger } <span class="keyword">from</span> <span class="string">'@utils/logger'</span>
+
+<span class="comment">// 相对路径（不推荐）</span>
+<span class="keyword">import</span> { add } <span class="keyword">from</span> <span class="string">'../../utils/math'</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="cases" class="section">
+      <div class="section-header">
+        <div class="section-icon practice">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+            <path d="M13 2v7h7"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">实战案例</h2>
+          <p class="section-subtitle">真实场景中的应用</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 1：工具函数库</span>
+          <span class="type-badge badge-common">常用</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// utils/math.ts</span>
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">add</span>(<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>): <span class="type">number</span> {
+  <span class="keyword">return</span> a + b
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">multiply</span>(<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>): <span class="type">number</span> {
+  <span class="keyword">return</span> a * b
+}
+
+<span class="comment">// utils/string.ts</span>
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">capitalize</span>(<span class="property">str</span>: <span class="type">string</span>): <span class="type">string</span> {
+  <span class="keyword">return</span> str.<span class="function">charAt</span>(<span class="number">0</span>).<span class="function">toUpperCase</span>() + str.<span class="function">slice</span>(<span class="number">1</span>)
+}
+
+<span class="comment">// utils/index.ts（统一入口）</span>
+<span class="keyword">export</span> * <span class="keyword">from</span> <span class="string">'./math'</span>
+<span class="keyword">export</span> * <span class="keyword">from</span> <span class="string">'./string'</span>
+
+<span class="comment">// app.ts</span>
+<span class="keyword">import</span> { add, capitalize } <span class="keyword">from</span> <span class="string">'./utils'</span></code></pre>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 2：全局类型扩展</span>
+          <span class="type-badge badge-advanced">进阶</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// types/global.d.ts</span>
+<span class="keyword">declare</span> <span class="keyword">global</span> {
+  <span class="keyword">interface</span> <span class="type">Window</span> {
+    <span class="property">__APP_CONFIG__</span>: {
+      <span class="property">apiUrl</span>: <span class="type">string</span>
+      <span class="property">debug</span>: <span class="type">boolean</span>
+    }
+  }
+
+  <span class="comment">// 扩展 Node.js 全局</span>
+  <span class="keyword">namespace</span> <span class="type">NodeJS</span> {
+    <span class="keyword">interface</span> <span class="type">ProcessEnv</span> {
+      <span class="property">NODE_ENV</span>: <span class="string">'development'</span> | <span class="string">'production'</span> | <span class="string">'test'</span>
+      <span class="property">API_KEY</span>: <span class="type">string</span>
+    }
+  }
+}
+
+<span class="keyword">export</span> {}  <span class="comment">// 使文件成为模块</span></code></pre>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-header">
+          <span class="type-name">案例 3：模块与命名空间混合</span>
+          <span class="type-badge badge-advanced">进阶</span>
+        </div>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// validators.ts</span>
+<span class="keyword">export</span> <span class="keyword">class</span> <span class="type">EmailValidator</span> {
+  <span class="function">validate</span>(<span class="property">email</span>: <span class="type">string</span>): <span class="type">boolean</span> {
+    <span class="keyword">return</span> <span class="string">/^[^\s@]+@[^\s@]+\.[^\s@]+$/</span>.<span class="function">test</span>(email)
+  }
+}
+
+<span class="comment">// 同时使用命名空间扩展</span>
+<span class="keyword">export</span> <span class="keyword">namespace</span> <span class="type">Validators</span> {
+  <span class="keyword">export</span> <span class="keyword">class</span> <span class="type">PhoneValidator</span> {
+    <span class="function">validate</span>(<span class="property">phone</span>: <span class="type">string</span>): <span class="type">boolean</span> {
+      <span class="keyword">return</span> <span class="string">/^1[3-9]\d{9}$/</span>.<span class="function">test</span>(phone)
+    }
+  }
+
+  <span class="keyword">export</span> <span class="keyword">class</span> <span class="type">IdCardValidator</span> {
+    <span class="function">validate</span>(<span class="property">idCard</span>: <span class="type">string</span>): <span class="type">boolean</span> {
+      <span class="keyword">return</span> <span class="string">/^\d{17}[\dX]$/</span>.<span class="function">test</span>(idCard)
+    }
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>TypeScript 模块与命名空间完全指南</p>
+    <p style="margin-top: 0.5rem;">组织代码的两种方式</p>
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#84cc16',
+        primaryTextColor: '#e6edf3',
+        primaryBorderColor: '#a3e635',
+        lineColor: '#8b949e',
+        secondaryColor: '#161b22',
+        tertiaryColor: '#0d1117'
+      }
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.type-card, .mermaid-container').forEach(el => {
+      el.classList.add('animate-on-scroll');
+      observer.observe(el);
+    });
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(link.getAttribute('href').substring(1));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>
