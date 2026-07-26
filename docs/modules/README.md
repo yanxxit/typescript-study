@@ -73,6 +73,13 @@
 | type-fest | [type-fest.md](type-fest.md) | [type-fest.html](type-fest.html) | 第三方实用类型库，补充内置类型 |
 | reflect-metadata | [reflect-metadata.md](reflect-metadata.md) | [reflect-metadata.html](reflect-metadata.html) | 反射元数据 API |
 
+### 面试准备
+
+| 文档 | MD | HTML | 说明 |
+|------|-----|------|------|
+| 面试常见考点 | [typescript-interview-qa.md](typescript-interview-qa.md) | [typescript-interview-qa.html](typescript-interview-qa.html) | 30 个常见面试问题及最佳答案 |
+| 80/20 法则 | [typescript-80-20-rule.md](typescript-80-20-rule.md) | [typescript-80-20-rule.html](typescript-80-20-rule.html) | 日常开发核心 20% 特性 |
+
 ### 新特性
 
 | 文档 | MD | HTML | 说明 |
@@ -121,15 +128,20 @@
 22. 装饰器新旧对比 → Legacy vs Standard
 23. TypeScript 6.0 新特性 → 最新版本特性
 
+### 面试准备
+
+24. 面试常见考点 → 30 个问题及最佳答案
+25. 80/20 法则 → 日常开发核心特性
+
 ---
 
 ## 统计信息
 
 | 类别 | 文档数量 | 总大小 |
 |------|----------|--------|
-| Markdown 文档 | 26 个 | ~300 KB |
-| HTML 文档 | 26 个 | ~1.1 MB |
-| **总计** | **52 个文件** | **~1.4 MB** |
+| Markdown 文档 | 30 个 | ~350 KB |
+| HTML 文档 | 30 个 | ~1.5 MB |
+| **总计** | **60 个文件** | **~1.5 MB** |
 
 ---
 

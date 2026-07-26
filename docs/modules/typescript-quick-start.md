@@ -1,8 +1,27 @@
 # TypeScript 日常开发快速入门
 
-> 本文档聚焦于日常开发中最常用的 TypeScript 特性，帮助你快速上手并高效使用 TypeScript。
+> 聚焦日常开发中最常用的 TypeScript 特性，帮助你快速上手并高效使用 TypeScript。无论你是 JavaScript 开发者还是完全的新手，本文档都能让你在 5 分钟内开始使用 TypeScript。
 
-## 快速开始
+## 目录
+
+1. [快速开始](#1-快速开始)
+2. [基础类型](#2-基础类型)
+3. [接口与类型](#3-接口与类型)
+4. [函数](#4-函数)
+5. [类](#5-类)
+6. [枚举](#6-枚举)
+7. [泛型](#7-泛型)
+8. [类型守卫](#8-类型守卫)
+9. [映射类型](#9-映射类型)
+10. [async/await](#10-asyncawait)
+11. [模块](#11-模块)
+12. [常用模式](#12-常用模式)
+
+---
+
+## 1. 快速开始
+
+### 安装与配置
 
 ```bash
 # 初始化项目
@@ -19,9 +38,27 @@ npx tsc
 npx ts-node index.ts
 ```
 
+### tsconfig.json 推荐配置
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"]
+}
+```
+
 ---
 
-## 1. 基础类型
+## 2. 基础类型
 
 ### 原始类型
 
@@ -58,7 +95,7 @@ let record: [string, number] = ['Alice', 30]
 
 ---
 
-## 2. 接口与类型
+## 3. 接口与类型
 
 ### 接口（Interface）
 
@@ -67,7 +104,6 @@ interface User {
   id: number
   name: string
   email?: string  // 可选属性
-  readonly id: number  // 只读
 }
 
 // 继承
@@ -96,7 +132,7 @@ type Callback = () => void
 
 ---
 
-## 3. 函数
+## 4. 函数
 
 ### 基本函数
 
@@ -143,7 +179,7 @@ const subtract: MathFn = (a, b) => a - b
 
 ---
 
-## 4. 类
+## 5. 类
 
 ### 基本类
 
@@ -239,7 +275,7 @@ class Circle extends Shape {
 
 ---
 
-## 5. 枚举
+## 6. 枚举
 
 ```typescript
 // 数字枚举
@@ -268,7 +304,7 @@ const color = Color.Red  // 编译后：const color = 0
 
 ---
 
-## 6. 泛型
+## 7. 泛型
 
 ### 泛型函数
 
@@ -308,7 +344,7 @@ nums.add(2)
 
 ---
 
-## 7. 类型守卫
+## 8. 类型守卫
 
 ### typeof 守卫
 
@@ -352,7 +388,7 @@ function process(value: unknown) {
 
 ---
 
-## 8. 映射类型
+## 9. 映射类型
 
 ```typescript
 interface User {
@@ -380,28 +416,6 @@ type UserWithoutId = Omit<User, 'id'>
 // Record: 构造键值映射
 type CatMap = Record<'miffy' | 'boris', { age: number }>
 // { miffy: { age: number }; boris: { age: number } }
-```
-
----
-
-## 9. 条件类型与 infer
-
-### 条件类型
-
-```typescript
-type IsString<T> = T extends string ? true : false
-
-type A = IsString<string>  // true
-type B = IsString<number>  // false
-```
-
-### infer 推断
-
-```typescript
-type UnwrapPromise<T> = T extends Promise<infer R> ? R : T
-
-type A = UnwrapPromise<Promise<string>>  // string
-type B = UnwrapPromise<string>           // string
 ```
 
 ---
@@ -524,7 +538,17 @@ if (result.ok) {
 | 函数类型 | `(args) => Type` | `type Fn = (x: number) => string` |
 | 泛型 | `<T>` | `function id<T>(x: T): T` |
 | 条件类型 | `T extends U ? X : Y` | `type A = T extends string ? true : false` |
-| infer | `infer T` | `type R = T extends (x: infer R) => any ? R : never` |
 | 映射类型 | `[K in keyof T]` | `{ [K in keyof T]?: T[K] }` |
 | typeof | `typeof x` | `const type = typeof value` |
 | keyof | `keyof T` | `type Keys = keyof User` |
+
+---
+
+## 最佳实践
+
+1. **优先使用类型推断**：让 TypeScript 自动推导类型
+2. **使用 unknown 替代 any**：更安全的类型处理
+3. **使用 interface 定义对象**：更好的扩展性
+4. **使用 type 定义联合类型**：更灵活的类型组合
+5. **使用泛型创建可复用组件**：类型安全的复用
+6. **始终开启 strict 模式**：更好的类型安全

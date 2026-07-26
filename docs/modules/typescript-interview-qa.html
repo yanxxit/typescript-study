@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeScript 面试常见考点</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-code: #1c2128;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --success: #3fb950;
+      --error: #f85149;
+      --warning: #d29922;
+      --theme: #ef4444;
+      --gradient-1: linear-gradient(135deg, #ef4444, #f97316);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 20%, rgba(239, 68, 68, 0.15), transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(249, 115, 22, 0.1), transparent 50%),
+                  var(--bg);
+      padding: 2rem;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(239, 68, 68, 0.3) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid var(--theme);
+      border-radius: 50px;
+      font-size: 0.9rem;
+      color: var(--theme);
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--theme));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s ease 0.1s both;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 3rem;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .stat-item { text-align: center; }
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 0.9rem; color: var(--text-muted); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-inner::-webkit-scrollbar { display: none; }
+
+    .nav-link {
+      white-space: nowrap;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--theme);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    .section { margin-bottom: 4rem; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .section-icon.c1 { background: var(--gradient-1); }
+    .section-icon.c2 { background: var(--gradient-2); }
+    .section-icon.c3 { background: linear-gradient(135deg, #10b981, #06b6d4); }
+    .section-icon.c4 { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
+
+    .section-title { font-size: 1.5rem; font-weight: 700; }
+    .section-desc { color: var(--text-muted); font-size: 0.9rem; }
+
+    .qa-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .qa-card:hover {
+      border-color: var(--theme);
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.1);
+    }
+
+    .question {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--theme);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .question::before {
+      content: 'Q';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: var(--theme);
+      color: white;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .answer {
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    .answer p {
+      margin-bottom: 1rem;
+    }
+
+    .code-wrapper { position: relative; margin: 1rem 0; }
+
+    .code-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 0.4rem 1rem;
+      background: var(--theme);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 0 0 8px 0;
+      z-index: 1;
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      padding-top: 2.5rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    code { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+    .inline-code {
+      background: rgba(239, 68, 68, 0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--theme);
+    }
+
+    .keyword { color: #ff7b72; }
+    .type { color: #79c0ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .function { color: #d2a8ff; }
+    .property { color: #e6edf3; }
+
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .api-table th {
+      background: var(--theme);
+      padding: 1rem 1.5rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .api-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .api-table tr:last-child td { border-bottom: none; }
+    .api-table tr:hover td { background: rgba(239, 68, 68, 0.1); }
+
+    .tip-box {
+      background: rgba(63, 185, 80, 0.1);
+      border: 1px solid var(--success);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .tip-box h4 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--success);
+      margin-bottom: 1rem;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .hero-stats { gap: 2rem; }
+      .stat-number { font-size: 2rem; }
+      .section-header { flex-direction: column; text-align: center; }
+    }
+
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">面试准备</span>
+      <h1>TypeScript 面试常见考点</h1>
+      <p>整理 TypeScript 面试中最常见的问题及最佳答案，帮助你系统性地准备面试。</p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">30</div>
+          <div class="stat-label">常见问题</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">5</div>
+          <div class="stat-label">核心类别</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">100%</div>
+          <div class="stat-label">答案覆盖</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#basics" class="nav-link">基础概念</a>
+      <a href="#interfaces" class="nav-link">接口与类型</a>
+      <a href="#generics" class="nav-link">泛型</a>
+      <a href="#guards" class="nav-link">类型守卫</a>
+      <a href="#advanced" class="nav-link">高级类型</a>
+      <a href="#async" class="nav-link">异步</a>
+      <a href="#oop" class="nav-link">面向对象</a>
+      <a href="#modules" class="nav-link">模块</a>
+      <a href="#scenarios" class="nav-link">实际场景</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <!-- 基础概念 -->
+    <section id="basics" class="section">
+      <div class="section-header">
+        <div class="section-icon c1">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">基础概念</h2>
+          <p class="section-desc">TypeScript 核心概念</p>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q1: TypeScript 是什么？它与 JavaScript 有什么区别？</div>
+        <div class="answer">
+          <p>TypeScript 是 JavaScript 的超集，在 JavaScript 基础上添加了<strong>静态类型系统</strong>。</p>
+          <table class="api-table">
+            <thead><tr><th>特性</th><th>JavaScript</th><th>TypeScript</th></tr></thead>
+            <tbody>
+              <tr><td>类型检查</td><td>运行时</td><td>编译时</td></tr>
+              <tr><td>类型注解</td><td>❌</td><td>✅</td></tr>
+              <tr><td>接口</td><td>❌</td><td>✅</td></tr>
+              <tr><td>枚举</td><td>❌</td><td>✅</td></tr>
+              <tr><td>泛型</td><td>❌</td><td>✅</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q2: 什么是类型推断？</div>
+        <div class="answer">
+          <p>类型推断是 TypeScript 编译器根据代码上下文自动推导类型的能力。</p>
+          <div class="code-wrapper">
+            <pre><code><span class="keyword">let</span> x = <span class="number">42</span>          <span class="comment">// number</span>
+<span class="keyword">let</span> y = <span class="string">'hello'</span>     <span class="comment">// string</span>
+
+<span class="keyword">function</span> <span class="function">add</span>(<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>) {
+  <span class="keyword">return</span> a + b  <span class="comment">// 返回类型自动推断为 number</span>
+}
+
+<span class="keyword">const</span> numbers = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]
+numbers.<span class="function">map</span>(<span class="property">x</span> =&gt; x * <span class="number">2</span>)  <span class="comment">// x 自动推断为 number</span></code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q3: any 和 unknown 有什么区别？</div>
+        <div class="answer">
+          <table class="api-table">
+            <thead><tr><th>特性</th><th>any</th><th>unknown</th></tr></thead>
+            <tbody>
+              <tr><td>类型安全</td><td>❌ 绕过检查</td><td>✅ 需要检查</td></tr>
+              <tr><td>赋值</td><td>可以赋值给任何类型</td><td>只能赋值给 unknown</td></tr>
+              <tr><td>使用</td><td>不需要类型检查</td><td>必须先检查类型</td></tr>
+            </tbody>
+          </table>
+          <div class="code-wrapper">
+            <pre><code><span class="comment">// any：不安全</span>
+<span class="keyword">let</span> a: <span class="type">any</span> = <span class="string">'hello'</span>
+a.<span class="function">foo</span>()  <span class="comment">// ✅ 不报错，但运行时出错</span>
+
+<span class="comment">// unknown：安全</span>
+<span class="keyword">let</span> b: <span class="type">unknown</span> = <span class="string">'hello'</span>
+<span class="comment">// b.foo()  // ❌ 编译错误</span>
+<span class="keyword">if</span> (<span class="keyword">typeof</span> b === <span class="string">'string'</span>) {
+  b.<span class="function">toUpperCase</span>()  <span class="comment">// ✅ 检查后使用</span>
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q4: never 和 void 有什么区别？</div>
+        <div class="answer">
+          <table class="api-table">
+            <thead><tr><th>特性</th><th>never</th><th>void</th></tr></thead>
+            <tbody>
+              <tr><td>含义</td><td>永远不会出现</td><td>无返回值</td></tr>
+              <tr><td>使用场景</td><td>抛出错误、无限循环</td><td>无返回值的函数</td></tr>
+            </tbody>
+          </table>
+          <div class="code-wrapper">
+            <pre><code><span class="comment">// never：永远不会返回</span>
+<span class="keyword">function</span> <span class="function">throwError</span>(): <span class="keyword">never</span> {
+  <span class="keyword">throw new</span> <span class="type">Error</span>(<span class="string">'error'</span>)
+}
+
+<span class="comment">// void：无返回值</span>
+<span class="keyword">function</span> <span class="function">log</span>(<span class="property">message</span>: <span class="type">string</span>): <span class="type">void</span> {
+  console.<span class="function">log</span>(message)
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 接口与类型 -->
+    <section id="interfaces" class="section">
+      <div class="section-header">
+        <div class="section-icon c2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18"/>
+            <path d="M9 21V9"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">接口与类型</h2>
+          <p class="section-desc">定义对象结构</p>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q5: interface 和 type 有什么区别？</div>
+        <div class="answer">
+          <table class="api-table">
+            <thead><tr><th>特性</th><th>interface</th><th>type</th></tr></thead>
+            <tbody>
+              <tr><td>对象结构</td><td>✅</td><td>✅</td></tr>
+              <tr><td>联合类型</td><td>❌</td><td>✅</td></tr>
+              <tr><td>元组</td><td>❌</td><td>✅</td></tr>
+              <tr><td>声明合并</td><td>✅</td><td>❌</td></tr>
+              <tr><td>被类实现</td><td>✅</td><td>❌</td></tr>
+            </tbody>
+          </table>
+          <div class="tip-box">
+            <h4>💡 选择建议</h4>
+            <p>定义对象结构用 <code class="inline-code">interface</code>，定义联合类型用 <code class="inline-code">type</code>。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q6: 什么是声明合并？</div>
+        <div class="answer">
+          <p>同名的接口会自动合并。</p>
+          <div class="code-wrapper">
+            <pre><code><span class="keyword">interface</span> <span class="type">User</span> {
+  <span class="property">name</span>: <span class="type">string</span>
+}
+
+<span class="keyword">interface</span> <span class="type">User</span> {
+  <span class="property">age</span>: <span class="type">number</span>
+}
+
+<span class="comment">// 合并后：User { name: string; age: number }</span>
+<span class="keyword">const</span> user: <span class="type">User</span> = { <span class="property">name</span>: <span class="string">'Alice'</span>, <span class="property">age</span>: <span class="number">30</span> }</code></pre>
+          </div>
+          <div class="tip-box">
+            <h4>💡 常见用途</h4>
+            <p>扩展第三方库的类型，如 Express 的 Request。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 泛型 -->
+    <section id="generics" class="section">
+      <div class="section-header">
+        <div class="section-icon c3">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">泛型</h2>
+          <p class="section-desc">类型参数化</p>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q7: 什么是泛型？为什么需要泛型？</div>
+        <div class="answer">
+          <p>泛型允许创建可复用的组件，支持多种类型。</p>
+          <div class="code-wrapper">
+            <pre><code><span class="comment">// 没有泛型：需要为每种类型写函数</span>
+<span class="keyword">function</span> <span class="function">identityString</span>(<span class="property">value</span>: <span class="type">string</span>): <span class="type">string</span> { <span class="keyword">return</span> value }
+<span class="keyword">function</span> <span class="function">identityNumber</span>(<span class="property">value</span>: <span class="type">number</span>): <span class="type">number</span> { <span class="keyword">return</span> value }
+
+<span class="comment">// 有泛型：一个函数适用所有类型</span>
+<span class="keyword">function</span> <span class="function">identity</span>&lt;<span class="type">T</span>&gt;(<span class="property">value</span>: <span class="type">T</span>): <span class="type">T</span> { <span class="keyword">return</span> value }
+
+<span class="function">identity</span>(<span class="string">'hello'</span>)  <span class="comment">// string</span>
+<span class="function">identity</span>(<span class="number">42</span>)       <span class="comment">// number</span></code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q8: 如何约束泛型？</div>
+        <div class="answer">
+          <p>使用 <code class="inline-code">extends</code> 关键字。</p>
+          <div class="code-wrapper">
+            <pre><code><span class="keyword">function</span> <span class="function">getProperty</span>&lt;<span class="type">T</span>, <span class="type">K</span> <span class="keyword">extends</span> <span class="keyword">keyof</span> <span class="type">T</span>&gt;(<span class="property">obj</span>: <span class="type">T</span>, <span class="property">key</span>: <span class="type">K</span>): <span class="type">T</span>[<span class="type">K</span>] {
+  <span class="keyword">return</span> obj[key]
+}
+
+<span class="keyword">const</span> user = { <span class="property">name</span>: <span class="string">'Alice'</span>, <span class="property">age</span>: <span class="number">30</span> }
+<span class="function">getProperty</span>(user, <span class="string">'name'</span>)  <span class="comment">// string</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 类型守卫 -->
+    <section id="guards" class="section">
+      <div class="section-header">
+        <div class="section-icon c4">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">类型守卫</h2>
+          <p class="section-desc">运行时类型检查</p>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q9: 什么是类型守卫？有哪几种？</div>
+        <div class="answer">
+          <table class="api-table">
+            <thead><tr><th>类型</th><th>语法</th><th>适用场景</th></tr></thead>
+            <tbody>
+              <tr><td>typeof</td><td><code class="inline-code">typeof x === 'string'</code></td><td>原始类型</td></tr>
+              <tr><td>instanceof</td><td><code class="inline-code">x instanceof Class</code></td><td>类实例</td></tr>
+              <tr><td>in</td><td><code class="inline-code">'prop' in obj</code></td><td>属性存在性</td></tr>
+              <tr><td>自定义</td><td><code class="inline-code">x is Type</code></td><td>复杂类型</td></tr>
+            </tbody>
+          </table>
+          <div class="code-wrapper">
+            <pre><code><span class="comment">// typeof</span>
+<span class="keyword">function</span> <span class="function">format</span>(<span class="property">value</span>: <span class="type">string</span> | <span class="type">number</span>): <span class="type">string</span> {
+  <span class="keyword">if</span> (<span class="keyword">typeof</span> value === <span class="string">'string'</span>) <span class="keyword">return</span> value.<span class="function">toUpperCase</span>()
+  <span class="keyword">return</span> value.<span class="function">toFixed</span>(<span class="number">2</span>)
+}
+
+<span class="comment">// 自定义类型守卫</span>
+<span class="keyword">function</span> <span class="function">isString</span>(<span class="property">value</span>: <span class="type">unknown</span>): <span class="property">value</span> <span class="keyword">is</span> <span class="type">string</span> {
+  <span class="keyword">return</span> <span class="keyword">typeof</span> value === <span class="string">'string'</span>
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 高级类型 -->
+    <section id="advanced" class="section">
+      <div class="section-header">
+        <div class="section-icon c1">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">高级类型</h2>
+          <p class="section-desc">条件类型、映射类型、infer</p>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q10: 常用的内置工具类型有哪些？</div>
+        <div class="answer">
+          <table class="api-table">
+            <thead><tr><th>类型</th><th>作用</th><th>示例</th></tr></thead>
+            <tbody>
+              <tr><td><code class="inline-code">Partial&lt;T&gt;</code></td><td>所有属性可选</td><td><code class="inline-code">Partial&lt;User&gt;</code></td></tr>
+              <tr><td><code class="inline-code">Required&lt;T&gt;</code></td><td>所有属性必选</td><td><code class="inline-code">Required&lt;Config&gt;</code></td></tr>
+              <tr><td><code class="inline-code">Pick&lt;T, K&gt;</code></td><td>选取指定键</td><td><code class="inline-code">Pick&lt;User, 'name'&gt;</code></td></tr>
+              <tr><td><code class="inline-code">Omit&lt;T, K&gt;</code></td><td>排除指定键</td><td><code class="inline-code">Omit&lt;User, 'id'&gt;</code></td></tr>
+              <tr><td><code class="inline-code">Record&lt;K, V&gt;</code></td><td>构造键值映射</td><td><code class="inline-code">Record&lt;string, number&gt;</code></td></tr>
+              <tr><td><code class="inline-code">ReturnType&lt;T&gt;</code></td><td>提取返回类型</td><td><code class="inline-code">ReturnType&lt;typeof fn&gt;</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q11: 什么是 infer 关键字？</div>
+        <div class="answer">
+          <p><code class="inline-code">infer</code> 用于在条件类型中声明待推断的类型变量。</p>
+          <div class="code-wrapper">
+            <pre><code><span class="comment">// 推断函数返回类型</span>
+<span class="keyword">type</span> <span class="type">ReturnType</span>&lt;<span class="type">T</span>&gt; = <span class="type">T</span> <span class="keyword">extends</span> (...<span class="property">args</span>: <span class="type">any</span>[]) =&gt; <span class="keyword">infer</span> <span class="type">R</span> ? <span class="type">R</span> : <span class="keyword">never</span>
+
+<span class="keyword">type</span> <span class="type">Fn</span> = () =&gt; <span class="type">string</span>
+<span class="keyword">type</span> <span class="type">Result</span> = <span class="type">ReturnType</span>&lt;<span class="type">Fn</span>&gt;  <span class="comment">// string</span>
+
+<span class="comment">// 推断 Promise 内部类型</span>
+<span class="keyword">type</span> <span class="type">UnwrapPromise</span>&lt;<span class="type">T</span>&gt; = <span class="type">T</span> <span class="keyword">extends</span> <span class="type">Promise</span>&lt;<span class="keyword">infer</span> <span class="type">R</span>&gt; ? <span class="type">R</span> : <span class="type">T</span>
+
+<span class="keyword">type</span> <span class="type">A</span> = <span class="type">UnwrapPromise</span>&lt;<span class="type">Promise</span>&lt;<span class="type">string</span>&gt;&gt;  <span class="comment">// string</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 异步 -->
+    <section id="async" class="section">
+      <div class="section-header">
+        <div class="section-icon c2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">异步</h2>
+          <p class="section-desc">async/await 与 Promise</p>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q12: async/await 和 Promise 有什么区别？</div>
+        <div class="answer">
+          <p>async/await 是 Promise 的语法糖，让异步代码更易读。</p>
+          <div class="code-wrapper">
+            <pre><code><span class="comment">// Promise 链</span>
+<span class="function">fetch</span>(<span class="string">'/api/user'</span>)
+  .<span class="function">then</span>(<span class="property">res</span> =&gt; res.<span class="function">json</span>())
+  .<span class="function">then</span>(<span class="property">user</span> =&gt; console.<span class="function">log</span>(user))
+  .<span class="function">catch</span>(<span class="property">error</span> =&gt; console.<span class="function">error</span>(error))
+
+<span class="comment">// async/await</span>
+<span class="keyword">async function</span> <span class="function">getUser</span>() {
+  <span class="keyword">try</span> {
+    <span class="keyword">const</span> res = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">'/api/user'</span>)
+    <span class="keyword">const</span> user = <span class="keyword">await</span> res.<span class="function">json</span>()
+    console.<span class="function">log</span>(user)
+  } <span class="keyword">catch</span> (error) {
+    console.<span class="function">error</span>(error)
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q13: 如何处理多个并行的异步操作？</div>
+        <div class="answer">
+          <p>使用 <code class="inline-code">Promise.all</code>。</p>
+          <div class="code-wrapper">
+            <pre><code><span class="comment">// 串行（慢）</span>
+<span class="keyword">const</span> user = <span class="keyword">await</span> <span class="function">fetchUser</span>(<span class="number">1</span>)
+<span class="keyword">const</span> posts = <span class="keyword">await</span> <span class="function">fetchPosts</span>(<span class="number">1</span>)
+
+<span class="comment">// 并行（快）</span>
+<span class="keyword">const</span> [user, posts] = <span class="keyword">await</span> <span class="type">Promise</span>.<span class="function">all</span>([
+  <span class="function">fetchUser</span>(<span class="number">1</span>),
+  <span class="function">fetchPosts</span>(<span class="number">1</span>)
+])
+
+<span class="comment">// 部分失败不影响其他</span>
+<span class="keyword">const</span> results = <span class="keyword">await</span> <span class="type">Promise</span>.<span class="function">allSettled</span>([
+  <span class="function">fetchUser</span>(<span class="number">1</span>),
+  <span class="function">fetchUser</span>(<span class="number">2</span>),
+  <span class="function">fetchUser</span>(<span class="number">3</span>)
+])</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 面向对象 -->
+    <section id="oop" class="section">
+      <div class="section-header">
+        <div class="section-icon c3">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18"/>
+            <path d="M9 21V9"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">面向对象</h2>
+          <p class="section-desc">类与访问修饰符</p>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q14: TypeScript 中的访问修饰符有哪些？</div>
+        <div class="answer">
+          <table class="api-table">
+            <thead><tr><th>修饰符</th><th>类内部</th><th>子类</th><th>类外部</th></tr></thead>
+            <tbody>
+              <tr><td><code class="inline-code">public</code></td><td>✅</td><td>✅</td><td>✅</td></tr>
+              <tr><td><code class="inline-code">protected</code></td><td>✅</td><td>✅</td><td>❌</td></tr>
+              <tr><td><code class="inline-code">private</code></td><td>✅</td><td>❌</td><td>❌</td></tr>
+            </tbody>
+          </table>
+          <div class="code-wrapper">
+            <pre><code><span class="keyword">class</span> <span class="type">User</span> {
+  <span class="keyword">public</span> <span class="property">name</span>: <span class="type">string</span>      <span class="comment">// 公开（默认）</span>
+  <span class="keyword">private</span> <span class="property">age</span>: <span class="type">number</span>      <span class="comment">// 私有</span>
+  <span class="keyword">protected</span> <span class="property">email</span>: <span class="type">string</span>  <span class="comment">// 受保护</span>
+
+  <span class="function">constructor</span>(<span class="property">name</span>: <span class="type">string</span>, <span class="property">age</span>: <span class="type">number</span>, <span class="property">email</span>: <span class="type">string</span>) {
+    <span class="keyword">this</span>.name = name
+    <span class="keyword">this</span>.age = age
+    <span class="keyword">this</span>.email = email
+  }
+}
+
+<span class="keyword">class</span> <span class="type">Employee</span> <span class="keyword">extends</span> <span class="type">User</span> {
+  <span class="function">greet</span>() {
+    <span class="keyword">return</span> <span class="string">`Hello, ${</span><span class="keyword">this</span>.name<span class="string">}`</span>   <span class="comment">// ✅ public</span>
+    <span class="comment">// return this.age             // ❌ private</span>
+    <span class="keyword">return</span> <span class="keyword">this</span>.email              <span class="comment">// ✅ protected</span>
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q15: 抽象类和接口有什么区别？</div>
+        <div class="answer">
+          <table class="api-table">
+            <thead><tr><th>特性</th><th>抽象类</th><th>接口</th></tr></thead>
+            <tbody>
+              <tr><td>实现方法</td><td>✅</td><td>❌</td></tr>
+              <tr><td>构造函数</td><td>✅</td><td>❌</td></tr>
+              <tr><td>多继承</td><td>❌</td><td>✅</td></tr>
+              <tr><td>运行时</td><td>存在</td><td>不存在</td></tr>
+            </tbody>
+          </table>
+          <div class="code-wrapper">
+            <pre><code><span class="comment">// 抽象类：可以有实现</span>
+<span class="keyword">abstract class</span> <span class="type">Shape</span> {
+  <span class="property">color</span>: <span class="type">string</span>
+  <span class="function">constructor</span>(<span class="property">color</span>: <span class="type">string</span>) { <span class="keyword">this</span>.color = color }
+  <span class="keyword">abstract</span> <span class="function">area</span>(): <span class="type">number</span>  <span class="comment">// 抽象方法</span>
+  <span class="function">describe</span>() { <span class="keyword">return</span> <span class="string">`面积: ${</span><span class="keyword">this</span>.<span class="function">area</span>()<span class="string">}`</span> }
+}
+
+<span class="comment">// 接口：只有声明</span>
+<span class="keyword">interface</span> <span class="type">Printable</span> {
+  <span class="function">print</span>(): <span class="type">void</span>
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 模块 -->
+    <section id="modules" class="section">
+      <div class="section-header">
+        <div class="section-icon c4">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <path d="M14 2v6h6"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">模块</h2>
+          <p class="section-desc">模块与声明文件</p>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q16: ES 模块和 CommonJS 有什么区别？</div>
+        <div class="answer">
+          <table class="api-table">
+            <thead><tr><th>特性</th><th>ES 模块</th><th>CommonJS</th></tr></thead>
+            <tbody>
+              <tr><td>语法</td><td><code class="inline-code">import/export</code></td><td><code class="inline-code">require/module.exports</code></td></tr>
+              <tr><td>加载</td><td>异步</td><td>同步</td></tr>
+              <tr><td>浏览器</td><td>✅ 原生支持</td><td>需要打包工具</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q17: 什么是声明文件（.d.ts）？</div>
+        <div class="answer">
+          <p>声明文件只包含类型声明，不包含实现，用于为 JS 库添加类型。</p>
+          <div class="code-wrapper">
+            <pre><code><span class="comment">// types/my-lib.d.ts</span>
+<span class="keyword">declare module</span> <span class="string">'my-lib'</span> {
+  <span class="keyword">export function</span> <span class="function">doSomething</span>(): <span class="type">void</span>
+  <span class="keyword">export const</span> <span class="property">version</span>: <span class="type">string</span>
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 实际场景 -->
+    <section id="scenarios" class="section">
+      <div class="section-header">
+        <div class="section-icon c1">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+            <path d="M13 2v7h7"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="section-title">实际场景</h2>
+          <p class="section-desc">实战问题</p>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q18: 如何实现类型安全的事件系统？</div>
+        <div class="answer">
+          <div class="code-wrapper">
+            <pre><code><span class="keyword">type</span> <span class="type">EventMap</span> = {
+  <span class="property">click</span>: { <span class="property">x</span>: <span class="type">number</span>; <span class="property">y</span>: <span class="type">number</span> }
+  <span class="property">keydown</span>: { <span class="property">key</span>: <span class="type">string</span> }
+  <span class="property">resize</span>: { <span class="property">width</span>: <span class="type">number</span>; <span class="property">height</span>: <span class="type">number</span> }
+}
+
+<span class="keyword">function</span> <span class="function">on</span>&lt;<span class="type">K</span> <span class="keyword">extends</span> <span class="keyword">keyof</span> <span class="type">EventMap</span>&gt;(
+  <span class="property">event</span>: <span class="type">K</span>,
+  <span class="property">handler</span>: (<span class="property">data</span>: <span class="type">EventMap</span>[<span class="type">K</span>]) =&gt; <span class="type">void</span>
+) {
+  <span class="comment">// 类型安全</span>
+}
+
+<span class="function">on</span>(<span class="string">'click'</span>, (<span class="property">data</span>) =&gt; {
+  console.<span class="function">log</span>(data.x, data.y)  <span class="comment">// ✅ 类型安全</span>
+})</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q19: 如何实现类型安全的 API？</div>
+        <div class="answer">
+          <div class="code-wrapper">
+            <pre><code><span class="keyword">interface</span> <span class="type">ApiEndpoints</span> {
+  <span class="string">'/users'</span>: { <span class="property">id</span>: <span class="type">number</span>; <span class="property">name</span>: <span class="type">string</span> }
+  <span class="string">'/posts'</span>: { <span class="property">id</span>: <span class="type">number</span>; <span class="property">title</span>: <span class="type">string</span> }
+}
+
+<span class="keyword">async function</span> <span class="function">fetchApi</span>&lt;<span class="type">T</span> <span class="keyword">extends</span> <span class="keyword">keyof</span> <span class="type">ApiEndpoints</span>&gt;(
+  <span class="property">endpoint</span>: <span class="type">T</span>
+): <span class="type">Promise</span>&lt;<span class="type">ApiEndpoints</span>[<span class="type">T</span>]&gt; {
+  <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="function">fetch</span>(endpoint)
+  <span class="keyword">return</span> response.<span class="function">json</span>()
+}
+
+<span class="keyword">const</span> user = <span class="keyword">await</span> <span class="function">fetchApi</span>(<span class="string">'/users'</span>)  <span class="comment">// { id: number; name: string }</span></code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="question">Q20: 如何实现 Result 模式？</div>
+        <div class="answer">
+          <div class="code-wrapper">
+            <pre><code><span class="keyword">type</span> <span class="type">Result</span>&lt;<span class="type">T</span>, <span class="type">E</span> = <span class="type">Error</span>&gt; =
+  | { <span class="property">ok</span>: <span class="keyword">true</span>; <span class="property">value</span>: <span class="type">T</span> }
+  | { <span class="property">ok</span>: <span class="keyword">false</span>; <span class="property">error</span>: <span class="type">E</span> }
+
+<span class="keyword">function</span> <span class="function">Ok</span>&lt;<span class="type">T</span>&gt;(<span class="property">value</span>: <span class="type">T</span>): <span class="type">Result</span>&lt;<span class="type">T</span>, <span class="keyword">never</span>&gt; {
+  <span class="keyword">return</span> { <span class="property">ok</span>: <span class="keyword">true</span>, value }
+}
+
+<span class="keyword">function</span> <span class="function">Err</span>&lt;<span class="type">E</span>&gt;(<span class="property">error</span>: <span class="type">E</span>): <span class="type">Result</span>&lt;<span class="keyword">never</span>, <span class="type">E</span>&gt; {
+  <span class="keyword">return</span> { <span class="property">ok</span>: <span class="keyword">false</span>, error }
+}
+
+<span class="keyword">function</span> <span class="function">divide</span>(<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>): <span class="type">Result</span>&lt;<span class="type">number</span>, <span class="type">string</span>&gt; {
+  <span class="keyword">if</span> (b === <span class="number">0</span>) <span class="keyword">return</span> <span class="function">Err</span>(<span class="string">'除数不能为零'</span>)
+  <span class="keyword">return</span> <span class="function">Ok</span>(a / b)
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>TypeScript 面试常见考点</p>
+    <p style="margin-top: 0.5rem;">30 个问题，覆盖所有核心考点</p>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.qa-card').forEach(el => {
+      el.classList.add('animate-on-scroll');
+      observer.observe(el);
+    });
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(link.getAttribute('href').substring(1));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>

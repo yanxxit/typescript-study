@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeScript 日常开发 80/20 法则</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-card: #161b22;
+      --bg-code: #1c2128;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --success: #3fb950;
+      --error: #f85149;
+      --warning: #d29922;
+      --theme: #f59e0b;
+      --gradient-1: linear-gradient(135deg, #f59e0b, #f97316);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 20%, rgba(245, 158, 11, 0.15), transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(249, 115, 22, 0.1), transparent 50%),
+                  var(--bg);
+      padding: 2rem;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(245, 158, 11, 0.3) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid var(--theme);
+      border-radius: 50px;
+      font-size: 0.9rem;
+      color: var(--theme);
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--theme));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s ease 0.1s both;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 3rem;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .stat-item { text-align: center; }
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 0.9rem; color: var(--text-muted); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-inner::-webkit-scrollbar { display: none; }
+
+    .nav-link {
+      white-space: nowrap;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--theme);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    .section { margin-bottom: 4rem; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--gradient-1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .section-title { font-size: 1.5rem; font-weight: 700; }
+    .section-desc { color: var(--text-muted); font-size: 0.9rem; }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: var(--theme);
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.1);
+    }
+
+    .card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .code-wrapper { position: relative; margin: 1rem 0; }
+
+    .code-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 0.4rem 1rem;
+      background: var(--theme);
+      color: #000;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 0 0 8px 0;
+      z-index: 1;
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      padding-top: 2.5rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    code { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+    .inline-code {
+      background: rgba(245, 158, 11, 0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--theme);
+    }
+
+    .keyword { color: #ff7b72; }
+    .type { color: #79c0ff; }
+    .string { color: #a5d6ff; }
+    .number { color: #79c0ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .function { color: #d2a8ff; }
+    .property { color: #e6edf3; }
+
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .api-table th {
+      background: var(--theme);
+      color: #000;
+      padding: 1rem 1.5rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .api-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .api-table tr:last-child td { border-bottom: none; }
+    .api-table tr:hover td { background: rgba(245, 158, 11, 0.1); }
+
+    .principle-box {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(249, 115, 22, 0.1));
+      border: 1px solid var(--theme);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .principle-box h4 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--theme);
+      margin-bottom: 1rem;
+    }
+
+    .tip-box {
+      background: rgba(63, 185, 80, 0.1);
+      border: 1px solid var(--success);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .tip-box h4 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--success);
+      margin-bottom: 1rem;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .hero-stats { gap: 2rem; }
+      .stat-number { font-size: 2rem; }
+      .section-header { flex-direction: column; text-align: center; }
+    }
+
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">80/20 法则</span>
+      <h1>TypeScript 日常开发 80/20 法则</h1>
+      <p>掌握这 20% 的核心特性，解决日常开发中 80% 的问题。基于实战经验，聚焦最常用、最实用的特性。</p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">7</div>
+          <div class="stat-label">核心特性</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">80%</div>
+          <div class="stat-label">问题覆盖率</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">30min</div>
+          <div class="stat-label">学习时间</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#types" class="nav-link">基础类型</a>
+      <a href="#interfaces" class="nav-link">接口与类型</a>
+      <a href="#generics" class="nav-link">泛型</a>
+      <a href="#union" class="nav-link">联合类型</a>
+      <a href="#async" class="nav-link">async/await</a>
+      <a href="#utility" class="nav-link">工具类型</a>
+      <a href="#patterns" class="nav-link">常用模式</a>
+      <a href="#practices" class="nav-link">最佳实践</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <!-- 基础类型 -->
+    <section id="types" class="section">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <div>
+          <h2 class="section-title">基础类型</h2>
+          <p class="section-desc">TypeScript 的 7 种原始类型和特殊类型</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📦 原始类型</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">let</span> name: <span class="type">string</span> = <span class="string">'Alice'</span>
+<span class="keyword">let</span> age: <span class="type">number</span> = <span class="number">30</span>
+<span class="keyword">let</span> active: <span class="type">boolean</span> = <span class="keyword">true</span>
+<span class="keyword">const</span> id: <span class="type">symbol</span> = <span class="function">Symbol</span>(<span class="string">'id'</span>)</code></pre>
+        </div>
+      </div>
+      <div class="card">
+        <h3>⚠️ any vs unknown</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">let</span> a: <span class="type">any</span> = <span class="string">'hello'</span>    <span class="comment">// ❌ 不推荐：绕过类型检查</span>
+<span class="keyword">let</span> b: <span class="type">unknown</span> = <span class="string">'hello'</span>  <span class="comment">// ✅ 推荐：安全的 any</span>
+
+<span class="comment">// unknown 必须检查才能使用</span>
+<span class="keyword">if</span> (<span class="keyword">typeof</span> b === <span class="string">'string'</span>) {
+  console.<span class="function">log</span>(b.<span class="function">toUpperCase</span>())  <span class="comment">// ✅ 安全</span>
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 接口与类型 -->
+    <section id="interfaces" class="section">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <div>
+          <h2 class="section-title">接口与类型</h2>
+          <p class="section-desc">定义数据结构的两种方式</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📝 接口与类型选择</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// 接口：定义对象结构</span>
+<span class="keyword">interface</span> <span class="type">User</span> {
+  <span class="property">id</span>: <span class="type">number</span>
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">email</span>?: <span class="type">string</span>
+}
+
+<span class="comment">// 类型别名：更灵活</span>
+<span class="keyword">type</span> <span class="type">ID</span> = <span class="type">string</span> | <span class="type">number</span>
+<span class="keyword">type</span> <span class="type">Status</span> = <span class="string">'active'</span> | <span class="string">'inactive'</span> | <span class="string">'deleted'</span></code></pre>
+        </div>
+        <div class="principle-box">
+          <h4>💡 选择建议</h4>
+          <table class="api-table">
+            <thead><tr><th>场景</th><th>推荐</th></tr></thead>
+            <tbody>
+              <tr><td>定义对象结构</td><td><code class="inline-code">interface</code></td></tr>
+              <tr><td>定义联合类型</td><td><code class="inline-code">type</code></td></tr>
+              <tr><td>定义元组</td><td><code class="inline-code">type</code></td></tr>
+              <tr><td>需要声明合并</td><td><code class="inline-code">interface</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 泛型 -->
+    <section id="generics" class="section">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <div>
+          <h2 class="section-title">泛型</h2>
+          <p class="section-desc">类型安全的复用</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>⚡ 泛型函数</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">function</span> <span class="function">identity</span>&lt;<span class="type">T</span>&gt;(<span class="property">value</span>: <span class="type">T</span>): <span class="type">T</span> {
+  <span class="keyword">return</span> value
+}
+
+<span class="function">identity</span>(<span class="string">'hello'</span>)  <span class="comment">// string</span>
+<span class="function">identity</span>(<span class="number">42</span>)       <span class="comment">// number</span></code></pre>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📝 泛型约束</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">function</span> <span class="function">getProperty</span>&lt;<span class="type">T</span>, <span class="type">K</span> <span class="keyword">extends</span> <span class="keyword">keyof</span> <span class="type">T</span>&gt;(<span class="property">obj</span>: <span class="type">T</span>, <span class="property">key</span>: <span class="type">K</span>): <span class="type">T</span>[<span class="type">K</span>] {
+  <span class="keyword">return</span> obj[key]
+}
+
+<span class="keyword">const</span> user = { <span class="property">name</span>: <span class="string">'Alice'</span>, <span class="property">age</span>: <span class="number">30</span> }
+<span class="function">getProperty</span>(user, <span class="string">'name'</span>)  <span class="comment">// string</span></code></pre>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🎯 实际应用</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// API 响应类型</span>
+<span class="keyword">interface</span> <span class="type">ApiResponse</span>&lt;<span class="type">T</span>&gt; {
+  <span class="property">code</span>: <span class="type">number</span>
+  <span class="property">data</span>: <span class="type">T</span>
+  <span class="property">message</span>: <span class="type">string</span>
+}
+
+<span class="keyword">async function</span> <span class="function">fetchData</span>&lt;<span class="type">T</span>&gt;(<span class="property">url</span>: <span class="type">string</span>): <span class="type">Promise</span>&lt;<span class="type">ApiResponse</span>&lt;<span class="type">T</span>&gt;&gt; {
+  <span class="keyword">const</span> res = <span class="keyword">await</span> <span class="function">fetch</span>(url)
+  <span class="keyword">return</span> res.<span class="function">json</span>()
+}
+
+<span class="keyword">const</span> user = <span class="keyword">await</span> <span class="function">fetchData</span>&lt;<span class="type">User</span>&gt;(<span class="string">'/api/user/1'</span>)</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 联合类型 -->
+    <section id="union" class="section">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <div>
+          <h2 class="section-title">联合类型 + 类型守卫</h2>
+          <p class="section-desc">处理多种类型</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🔍 类型守卫</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="comment">// typeof 守卫</span>
+<span class="keyword">function</span> <span class="function">format</span>(<span class="property">value</span>: <span class="type">string</span> | <span class="type">number</span>): <span class="type">string</span> {
+  <span class="keyword">if</span> (<span class="keyword">typeof</span> value === <span class="string">'string'</span>) {
+    <span class="keyword">return</span> value.<span class="function">toUpperCase</span>()
+  }
+  <span class="keyword">return</span> value.<span class="function">toFixed</span>(<span class="number">2</span>)
+}
+
+<span class="comment">// 自定义类型守卫</span>
+<span class="keyword">function</span> <span class="function">isString</span>(<span class="property">value</span>: <span class="type">unknown</span>): <span class="property">value</span> <span class="keyword">is</span> <span class="type">string</span> {
+  <span class="keyword">return</span> <span class="keyword">typeof</span> value === <span class="string">'string'</span>
+}</code></pre>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🎯 类型安全的事件系统</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">type</span> <span class="type">EventMap</span> = {
+  <span class="property">click</span>: { <span class="property">x</span>: <span class="type">number</span>; <span class="property">y</span>: <span class="type">number</span> }
+  <span class="property">keydown</span>: { <span class="property">key</span>: <span class="type">string</span> }
+}
+
+<span class="keyword">function</span> <span class="function">on</span>&lt;<span class="type">K</span> <span class="keyword">extends</span> <span class="keyword">keyof</span> <span class="type">EventMap</span>&gt;(
+  <span class="property">event</span>: <span class="type">K</span>,
+  <span class="property">handler</span>: (<span class="property">data</span>: <span class="type">EventMap</span>[<span class="type">K</span>]) =&gt; <span class="type">void</span>
+) {
+  <span class="comment">// 类型安全</span>
+}
+
+<span class="function">on</span>(<span class="string">'click'</span>, (<span class="property">data</span>) =&gt; {
+  console.<span class="function">log</span>(data.x, data.y)  <span class="comment">// ✅ 类型安全</span>
+})</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- async/await -->
+    <section id="async" class="section">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <div>
+          <h2 class="section-title">async/await</h2>
+          <p class="section-desc">异步操作</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>⚡ 异步函数</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">async function</span> <span class="function">fetchUser</span>(<span class="property">id</span>: <span class="type">number</span>): <span class="type">Promise</span>&lt;<span class="type">User</span>&gt; {
+  <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">`/api/users/</span>${id}<span class="string">`</span>)
+  <span class="keyword">return</span> response.<span class="function">json</span>()
+}
+
+<span class="comment">// 并行执行</span>
+<span class="keyword">const</span> [user, posts] = <span class="keyword">await</span> <span class="type">Promise</span>.<span class="function">all</span>([
+  <span class="function">fetchUser</span>(<span class="number">1</span>),
+  <span class="function">fetchPosts</span>(<span class="number">1</span>)
+])</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 工具类型 -->
+    <section id="utility" class="section">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <div>
+          <h2 class="section-title">工具类型</h2>
+          <p class="section-desc">变换现有类型</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📋 最常用的 5 个</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">interface</span> <span class="type">User</span> {
+  <span class="property">id</span>: <span class="type">number</span>
+  <span class="property">name</span>: <span class="type">string</span>
+  <span class="property">email</span>: <span class="type">string</span>
+  <span class="property">password</span>: <span class="type">string</span>
+}
+
+<span class="comment">// Partial: 所有属性可选</span>
+<span class="keyword">type</span> <span class="type">PartialUser</span> = <span class="type">Partial</span>&lt;<span class="type">User</span>&gt;
+
+<span class="comment">// Pick: 选取指定键</span>
+<span class="keyword">type</span> <span class="type">UserName</span> = <span class="type">Pick</span>&lt;<span class="type">User</span>, <span class="string">'name'</span> | <span class="string">'email'</span>&gt;
+
+<span class="comment">// Omit: 排除指定键</span>
+<span class="keyword">type</span> <span class="type">SafeUser</span> = <span class="type">Omit</span>&lt;<span class="type">User</span>, <span class="string">'password'</span>&gt;
+
+<span class="comment">// Record: 构造键值映射</span>
+<span class="keyword">type</span> <span class="type">CatMap</span> = <span class="type">Record</span>&lt;<span class="string">'miffy'</span> | <span class="string">'boris'</span>, { <span class="property">age</span>: <span class="type">number</span> }&gt;
+
+<span class="comment">// Readonly: 所有属性只读</span>
+<span class="keyword">type</span> <span class="type">ReadonlyUser</span> = <span class="type">Readonly</span>&lt;<span class="type">User</span>&gt;</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 常用模式 -->
+    <section id="patterns" class="section">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <div>
+          <h2 class="section-title">常用模式</h2>
+          <p class="section-desc">实战技巧</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🎯 类型安全的 API</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">interface</span> <span class="type">ApiEndpoints</span> {
+  <span class="string">'/users'</span>: { <span class="property">id</span>: <span class="type">number</span>; <span class="property">name</span>: <span class="type">string</span> }
+  <span class="string">'/posts'</span>: { <span class="property">id</span>: <span class="type">number</span>; <span class="property">title</span>: <span class="type">string</span> }
+}
+
+<span class="keyword">async function</span> <span class="function">fetchApi</span>&lt;<span class="type">T</span> <span class="keyword">extends</span> <span class="keyword">keyof</span> <span class="type">ApiEndpoints</span>&gt;(
+  <span class="property">endpoint</span>: <span class="type">T</span>
+): <span class="type">Promise</span>&lt;<span class="type">ApiEndpoints</span>[<span class="type">T</span>]&gt; {
+  <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="function">fetch</span>(endpoint)
+  <span class="keyword">return</span> response.<span class="function">json</span>()
+}
+
+<span class="keyword">const</span> user = <span class="keyword">await</span> <span class="function">fetchApi</span>(<span class="string">'/users'</span>)  <span class="comment">// { id: number; name: string }</span></code></pre>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🎯 Result 模式</h3>
+        <div class="code-wrapper">
+          <pre><code><span class="keyword">type</span> <span class="type">Result</span>&lt;<span class="type">T</span>, <span class="type">E</span> = <span class="type">Error</span>&gt; =
+  | { <span class="property">ok</span>: <span class="keyword">true</span>; <span class="property">value</span>: <span class="type">T</span> }
+  | { <span class="property">ok</span>: <span class="keyword">false</span>; <span class="property">error</span>: <span class="type">E</span> }
+
+<span class="keyword">function</span> <span class="function">divide</span>(<span class="property">a</span>: <span class="type">number</span>, <span class="property">b</span>: <span class="type">number</span>): <span class="type">Result</span>&lt;<span class="type">number</span>, <span class="type">string</span>&gt; {
+  <span class="keyword">if</span> (b === <span class="number">0</span>) <span class="keyword">return</span> { <span class="property">ok</span>: <span class="keyword">false</span>, <span class="property">error</span>: <span class="string">'除数不能为零'</span> }
+  <span class="keyword">return</span> { <span class="property">ok</span>: <span class="keyword">true</span>, <span class="property">value</span>: a / b }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 最佳实践 -->
+    <section id="practices" class="section">
+      <div class="section-header">
+        <div class="section-num">⭐</div>
+        <div>
+          <h2 class="section-title">最佳实践</h2>
+          <p class="section-desc">高效使用 TypeScript</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="principle-box">
+          <h4>💡 核心原则</h4>
+          <ol style="padding-left: 1.25rem; line-height: 2;">
+            <li><strong>开启 strict 模式</strong>：更好的类型安全</li>
+            <li><strong>优先使用 unknown</strong>：替代 any</li>
+            <li><strong>使用 interface 定义对象</strong>：更好的扩展性</li>
+            <li><strong>使用泛型创建可复用组件</strong>：类型安全的复用</li>
+            <li><strong>使用联合类型 + 类型守卫</strong>：处理多种类型</li>
+            <li><strong>使用工具类型变换类型</strong>：减少重复代码</li>
+            <li><strong>保持代码可读性</strong>：不要过度使用类型</li>
+          </ol>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📊 速查表</h3>
+        <table class="api-table">
+          <thead><tr><th>特性</th><th>语法</th><th>使用频率</th></tr></thead>
+          <tbody>
+            <tr><td>类型注解</td><td><code class="inline-code">x: Type</code></td><td>⭐⭐⭐⭐⭐</td></tr>
+            <tr><td>接口</td><td><code class="inline-code">interface I {}</code></td><td>⭐⭐⭐⭐⭐</td></tr>
+            <tr><td>泛型</td><td><code class="inline-code">&lt;T&gt;</code></td><td>⭐⭐⭐⭐⭐</td></tr>
+            <tr><td>联合类型</td><td><code class="inline-code">A | B</code></td><td>⭐⭐⭐⭐⭐</td></tr>
+            <tr><td>async/await</td><td><code class="inline-code">async function</code></td><td>⭐⭐⭐⭐⭐</td></tr>
+            <tr><td>工具类型</td><td><code class="inline-code">Partial&lt;T&gt;</code></td><td>⭐⭐⭐⭐</td></tr>
+            <tr><td>类型守卫</td><td><code class="inline-code">typeof x === 'string'</code></td><td>⭐⭐⭐⭐</td></tr>
+            <tr><td>keyof</td><td><code class="inline-code">keyof T</code></td><td>⭐⭐⭐</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>TypeScript 日常开发 80/20 法则</p>
+    <p style="margin-top: 0.5rem;">掌握核心 20%，解决日常 80%</p>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.card').forEach(el => {
+      el.classList.add('animate-on-scroll');
+      observer.observe(el);
+    });
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(link.getAttribute('href').substring(1));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>
